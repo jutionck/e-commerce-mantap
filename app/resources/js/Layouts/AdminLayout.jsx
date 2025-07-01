@@ -5,41 +5,66 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
-export default function AuthenticatedLayout({ header, children }) {
+export default function AdminLayout({ header, children }) {
     const user = usePage().props.auth.user;
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
+            <nav className="border-b border-gray-100 bg-white shadow-sm">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
-                                <Link href="/">
+                                <Link href="/admin">
                                     <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    <span className="ml-2 text-lg font-semibold text-gray-800">Admin Panel</span>
                                 </Link>
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink
-                                    href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                    href={route('admin.dashboard')}
+                                    active={route().current('admin.dashboard')}
                                 >
                                     Dashboard
                                 </NavLink>
                                 <NavLink
-                                    href={route('orders.index')}
-                                    active={route().current('orders.*')}
+                                    href="#"
+                                    active={route().current('admin.products.*')}
                                 >
-                                    Pesanan Saya
+                                    Products
+                                </NavLink>
+                                <NavLink
+                                    href="#"
+                                    active={route().current('admin.categories.*')}
+                                >
+                                    Categories
+                                </NavLink>
+                                <NavLink
+                                    href="#"
+                                    active={route().current('admin.orders.*')}
+                                >
+                                    Orders
+                                </NavLink>
+                                <NavLink
+                                    href="#"
+                                    active={route().current('admin.users.*')}
+                                >
+                                    Users
                                 </NavLink>
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
+                            {/* Back to Store Link */}
+                            <Link
+                                href="/"
+                                className="text-sm text-gray-500 hover:text-gray-700 transition"
+                            >
+                                ← Back to Store
+                            </Link>
+
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -49,6 +74,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                                 className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
                                             >
                                                 {user.name}
+                                                <span className="ml-1 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
+                                                    Admin
+                                                </span>
 
                                                 <svg
                                                     className="-me-0.5 ms-2 h-4 w-4"
@@ -67,18 +95,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
+                                        <Dropdown.Link href={route('profile.edit')}>
                                             Profile
                                         </Dropdown.Link>
-                                        {user.role === 'admin' && (
-                                            <Dropdown.Link
-                                                href={route('admin.dashboard')}
-                                            >
-                                                Admin Panel
-                                            </Dropdown.Link>
-                                        )}
                                         <Dropdown.Link
                                             href={route('logout')}
                                             method="post"
@@ -142,16 +161,34 @@ export default function AuthenticatedLayout({ header, children }) {
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
+                            href={route('admin.dashboard')}
+                            active={route().current('admin.dashboard')}
                         >
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href={route('orders.index')}
-                            active={route().current('orders.*')}
+                            href="#"
+                            active={route().current('admin.products.*')}
                         >
-                            Pesanan Saya
+                            Products
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href="#"
+                            active={route().current('admin.categories.*')}
+                        >
+                            Categories
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href="#"
+                            active={route().current('admin.orders.*')}
+                        >
+                            Orders
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href="#"
+                            active={route().current('admin.users.*')}
+                        >
+                            Users
                         </ResponsiveNavLink>
                     </div>
 
@@ -169,11 +206,6 @@ export default function AuthenticatedLayout({ header, children }) {
                             <ResponsiveNavLink href={route('profile.edit')}>
                                 Profile
                             </ResponsiveNavLink>
-                            {user.role === 'admin' && (
-                                <ResponsiveNavLink href={route('admin.dashboard')}>
-                                    Admin Panel
-                                </ResponsiveNavLink>
-                            )}
                             <ResponsiveNavLink
                                 method="post"
                                 href={route('logout')}

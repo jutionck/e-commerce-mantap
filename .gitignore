@@ -46,4 +46,5 @@ vendor/
 /app/storage/logs/*
 
 # CLAUDE.md (internal file)
+.claude/
 CLAUDE.md

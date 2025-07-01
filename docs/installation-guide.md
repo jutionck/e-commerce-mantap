@@ -81,6 +81,9 @@ php artisan migrate
 
 # Seed database dengan sample data
 php artisan db:seed
+
+# Seed admin user (optional)
+php artisan db:seed --class=AdminUserSeeder
 ```
 
 ### 6. Build Frontend Assets
@@ -237,11 +240,19 @@ php artisan test --coverage
 - **Vite Dev Server:** http://localhost:5173 (auto-proxied)
 
 ### Default Login Credentials
-Setelah seeding, buat user baru melalui registration atau gunakan tinker:
-```bash
-php artisan tinker
-User::factory()->create(['email' => 'admin@example.com']);
-```
+Setelah menjalankan AdminUserSeeder:
+
+**Admin Account:**
+- Email: `admin@ecommerce.com`
+- Password: `admin123`
+- Role: Admin (akses ke Admin Panel)
+
+**Customer Account:**  
+- Email: `customer@example.com`
+- Password: `customer123`
+- Role: Customer (akses customer features only)
+
+Atau buat user baru melalui registration.
 
 ## Production Setup
 

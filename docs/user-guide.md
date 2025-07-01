@@ -8,6 +8,7 @@
 5. [Checkout dan Pembayaran](#checkout-dan-pembayaran)
 6. [Mengelola Pesanan](#mengelola-pesanan)
 7. [Profile dan Akun](#profile-dan-akun)
+8. [Admin Panel](#admin-panel)
 
 ## Pengenalan
 
@@ -188,6 +189,68 @@ Klik "Lihat Detail" untuk melihat:
 ### Logout
 - Klik nama Anda di navigation
 - Pilih **"Log Out"** dari dropdown
+
+## Admin Panel
+
+### Akses Admin Panel
+**Hanya untuk pengguna dengan role admin**
+
+1. Login dengan akun admin
+2. Klik nama Anda di navigation
+3. Pilih **"Admin Panel"** dari dropdown
+4. Atau akses langsung di `/admin`
+
+### Default Admin Account
+- **Email:** admin@ecommerce.com
+- **Password:** admin123
+
+### Fitur Admin Panel
+
+#### Dashboard Admin
+- **Statistics Overview:** Total users, products, orders, pending orders
+- **Recent Orders:** 5 pesanan terbaru dengan detail
+- **Quick Navigation:** Menu ke Products, Categories, Orders, Users
+
+#### Navigation
+- **Dashboard:** Overview statistics
+- **Products:** Product management (coming soon)
+- **Categories:** Category management (coming soon)  
+- **Orders:** Order management (coming soon)
+- **Users:** User management (coming soon)
+- **Back to Store:** Kembali ke frontend store
+
+#### Security Features
+- **Role-based Access:** Hanya admin yang bisa akses
+- **Admin Verification:** Additional security layer
+- **Automatic Redirect:** Guest diarahkan ke login
+- **403 Error:** Customer tidak bisa akses admin area
+
+### Cara Menggunakan Admin Panel
+
+#### Melihat Statistics
+1. Login sebagai admin
+2. Akses admin panel
+3. Dashboard menampilkan:
+   - Total customers
+   - Total products
+   - Total orders
+   - Pending orders yang perlu diproses
+
+#### Melihat Recent Orders
+1. Di dashboard admin, scroll ke "Recent Orders"
+2. Table menampilkan:
+   - Order number
+   - Customer name
+   - Number of items
+   - Total amount
+   - Order status
+   - Order date
+
+#### Navigation Tips
+- **Professional Design:** Clean admin interface
+- **Back to Store:** Easy switch antara admin dan customer view
+- **Responsive:** Works on mobile dan desktop
+- **Admin Badge:** Clear indication you're in admin mode
 
 ## Tips Penggunaan
 

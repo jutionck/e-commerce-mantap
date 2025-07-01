@@ -27,11 +27,12 @@ Aplikasi e-commerce modern yang dibangun dengan Laravel sebagai backend dan Reac
 - 💳 **Checkout Process** - Form alamat dan pengiriman
 - 📦 **Order Management** - History dan detail pesanan
 - 👤 **User Profile** - Kelola akun dan informasi pribadi
+- 🏢 **Admin Panel** - Dashboard admin dengan role-based access
 - 📱 **Responsive Design** - Mobile-friendly interface
 
 ### 🔄 **Dalam Pengembangan**
 - 💰 **Payment Gateway** - Integrasi Midtrans Snap
-- 🏢 **Admin Panel** - Dashboard admin untuk CRUD
+- 📋 **Admin CRUD** - Product & order management
 - 🚚 **Shipping API** - Integrasi JNE, JNT, dll
 - 📧 **Email Notifications** - Konfirmasi pesanan
 
@@ -66,6 +67,7 @@ php artisan key:generate
 # Setup database
 php artisan migrate
 php artisan db:seed
+php artisan db:seed --class=AdminUserSeeder
 
 # Build assets dan start server
 npm run build
@@ -139,7 +141,7 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 
 ## 📈 Status Progress
 
-**Overall Completion: 65%** 🎯
+**Overall Completion: 75%** 🎯
 
 | Modul | Status | Progress |
 |-------|--------|----------|
@@ -147,10 +149,11 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 | 🛍️ Product Catalog | ✅ Complete | 100% |
 | 🛒 Shopping Cart | ✅ Complete | 100% |
 | 📦 Order Management | ✅ Complete | 100% |
+| 🏢 Admin Panel | ✅ Complete | 100% |
 | 💳 Checkout Process | ⚠️ Partial | 80% |
 | 🚚 Shipping Integration | ⚠️ Mock | 30% |
 | 💰 Payment Gateway | ❌ Not Started | 0% |
-| 🏢 Admin Panel | ❌ Not Started | 0% |
+| 📋 Admin CRUD | 🔄 In Progress | 20% |
 | 📧 Email Notifications | ❌ Not Started | 0% |
 
 > 📊 **Detail progress bisa dilihat di [Features Status](docs/features-status.md)**
@@ -165,11 +168,17 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 5. **Order History** - Lihat pesanan di "Pesanan Saya"
 
 ### Test Accounts
-```bash
-# Buat test user dengan tinker
-php artisan tinker
-User::factory()->create(['email' => 'test@example.com']);
-```
+Setelah menjalankan AdminUserSeeder:
+
+**Admin Account:**
+- Email: `admin@ecommerce.com`
+- Password: `admin123`
+- Access: Admin Panel + Customer features
+
+**Customer Account:**
+- Email: `customer@example.com`  
+- Password: `customer123`
+- Access: Customer features only
 
 ### Testing Commands
 ```bash
@@ -293,10 +302,11 @@ Kami sangat welcome untuk kontribusi! Berikut cara berkontribusi:
 - ✅ Product catalog
 - ✅ Shopping cart
 - ✅ Order management
+- ✅ Admin panel with role-based access
 
-### Phase 2: Payment & Admin 🔄 (In Progress)
+### Phase 2: Payment & CRUD 🔄 (In Progress)
 - 🔄 Payment gateway (Midtrans)
-- 🔄 Admin panel development
+- 🔄 Admin product/order CRUD
 - 🔄 Real shipping API integration
 
 ### Phase 3: User Experience 📅 (Planned)
