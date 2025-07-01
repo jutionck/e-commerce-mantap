@@ -2,11 +2,14 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
-import { Link } from '@inertiajs/react';
+import CartIcon from '@/Components/CartIcon';
+import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function PublicLayout({ user, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const { props } = usePage();
+    const cart = props.cart || {};
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -53,7 +56,10 @@ export default function PublicLayout({ user, children }) {
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
+                            {/* Cart Icon */}
+                            <CartIcon cart={cart} />
+                            
                             {user ? (
                                 <div className="relative ms-3">
                                     <Dropdown>

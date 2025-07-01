@@ -67,22 +67,62 @@ Setiap produk menampilkan:
 
 ## Keranjang Belanja
 
+### 🛒 Cart Icon & Quick Access
+- **Cart Icon di Navigation**: Icon keranjang dengan badge jumlah item
+- **Dropdown Preview**: Hover/klik icon untuk preview keranjang
+- **Quick Actions**: Hapus item langsung dari dropdown
+- **Item Count**: Badge menampilkan total jumlah item
+
 ### Mengakses Keranjang
-- Klik link **"Cart"** di navigation
-- Atau tombol keranjang di halaman produk
+- **Via Cart Icon**: Klik icon keranjang di navigation bar
+- **Via Dropdown**: Klik "View Cart" dari dropdown preview
+- **Via Link**: Klik link "Keranjang" di navigation (authenticated users)
+
+### 🎨 Modern Cart Interface
+- **Responsive Design**: Tampilan optimal di desktop dan mobile
+- **Professional Layout**: Grid layout dengan order summary sidebar
+- **Visual Product Cards**: Card design dengan gambar produk
+- **Smooth Animations**: Hover effects dan smooth transitions
 
 ### Mengelola Keranjang
-- **Update Quantity**: Ubah jumlah produk dengan input number
-- **Hapus Item**: Klik tombol "Hapus" untuk menghapus produk
-- **Lihat Total**: Total harga otomatis terhitung
-- **Lanjut Checkout**: Klik "Checkout" jika sudah siap
+- **Update Quantity**: 
+  - Gunakan tombol +/- untuk adjusting quantity
+  - Input langsung dengan number field
+  - Auto-update dengan loading indicator
+- **Hapus Item**: 
+  - Tombol hapus dengan icon trash
+  - Konfirmasi loading state
+  - Update otomatis setelah penghapusan
+- **Lihat Total**: 
+  - Order summary sidebar dengan breakdown
+  - Format mata uang IDR
+  - Informasi shipping gratis
+
+### 📋 Order Summary Features
+- **Item Count**: Jumlah total item di keranjang
+- **Subtotal**: Total harga sebelum ongkir
+- **Shipping Info**: "Free Shipping" indicator
+- **Grand Total**: Total akhir dengan format IDR
+- **Trust Badges**: Security, shipping, dan return policy info
+
+### Authentication-Aware Features
+- **For Authenticated Users**: Direct checkout button
+- **For Guest Users**: Sign in to checkout dengan link registrasi
+- **Seamless Experience**: Cart persist across login/logout
+
+### Empty Cart State
+- **Friendly Message**: User-friendly empty cart illustration
+- **Call to Action**: "Continue Shopping" button
+- **Visual Design**: Professional empty state dengan icon
 
 ### Informasi di Keranjang
-- Daftar semua produk yang ditambahkan
-- Quantity masing-masing produk
-- Harga per item dan subtotal
-- Total keseluruhan
-- Tombol untuk update atau hapus
+- Daftar semua produk dalam card format
+- Product images dengan placeholder
+- Quantity controls dengan +/- buttons
+- Harga per item dan subtotal per produk
+- Total keseluruhan dengan breakdown
+- Loading states untuk semua interactions
+- Professional error handling
 
 ## Checkout dan Pembayaran
 
