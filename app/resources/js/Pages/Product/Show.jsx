@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import GuestLayout from '@/Layouts/GuestLayout';
+import PublicLayout from '@/Layouts/PublicLayout';
 
 export default function Show({ auth, product, relatedProducts = [] }) {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
@@ -44,10 +43,8 @@ export default function Show({ auth, product, relatedProducts = [] }) {
         post(route('cart.store'));
     };
 
-    const Layout = auth?.user ? AuthenticatedLayout : GuestLayout;
-
     return (
-        <Layout user={auth?.user}>
+        <PublicLayout user={auth?.user}>
             <Head title={product.name} />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -401,6 +398,6 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                     </div>
                 )}
             </div>
-        </Layout>
+        </PublicLayout>
     );
 }

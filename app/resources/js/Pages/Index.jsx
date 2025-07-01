@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link, Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import GuestLayout from '@/Layouts/GuestLayout';
+import PublicLayout from '@/Layouts/PublicLayout';
 
 export default function Index({ auth, products, categories }) {
     const [searchTerm, setSearchTerm] = useState('');
@@ -64,10 +63,8 @@ export default function Index({ auth, products, categories }) {
         setSortBy('name');
     };
 
-    const Layout = auth?.user ? AuthenticatedLayout : GuestLayout;
-
     return (
-        <Layout user={auth?.user}>
+        <PublicLayout user={auth?.user}>
             <Head title="Product Catalog" />
 
             {/* Hero Section */}
@@ -331,6 +328,6 @@ export default function Index({ auth, products, categories }) {
                     </div>
                 </div>
             </div>
-        </Layout>
+        </PublicLayout>
     );
 }
