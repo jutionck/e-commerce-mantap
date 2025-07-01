@@ -1,0 +1,49 @@
+# Laravel
+/app/vendor/
+/app/node_modules/
+/app/public/hot
+/app/public/storage
+/app/storage/*.key
+/app/.env
+/app/.env.backup
+/app/.env.production
+/app/.phpunit.result.cache
+/app/Homestead.json
+/app/Homestead.yaml
+/app/auth.json
+/app/npm-debug.log
+/app/yarn-error.log
+/app/.idea
+/app/.vscode
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Dependencies
+node_modules/
+vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build files
+/app/public/build/
+/app/storage/framework/cache/*
+/app/storage/framework/sessions/*
+/app/storage/framework/views/*
+/app/storage/logs/*
+
+# CLAUDE.md (internal file)
+CLAUDE.md
