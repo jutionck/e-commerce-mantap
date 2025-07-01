@@ -1,0 +1,13 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#EC4899"/>
+  <rect x="150" y="150" width="500" height="300" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2" rx="10"/>
+  <text x="400" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#EC4899">
+    SMARTPHONE
+  </text>
+  <text x="400" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#6B7280">
+    Terbaru
+  </text>
+  <text x="400" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#9CA3AF">
+    Demo Product Image
+  </text>
+</svg>

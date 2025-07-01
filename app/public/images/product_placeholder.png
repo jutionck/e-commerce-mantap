@@ -1,1 +1,13 @@
-PNG placeholder content would go here but we'll use a simple text-based approach
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="#F3F4F6"/>
+  <rect x="150" y="150" width="500" height="300" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2" rx="10"/>
+  <text x="400" y="280" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#6B7280">
+    PRODUCT
+  </text>
+  <text x="400" y="320" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="#9CA3AF">
+    Image Placeholder
+  </text>
+  <circle cx="350" cy="380" r="20" fill="#D1D5DB"/>
+  <circle cx="400" cy="380" r="20" fill="#D1D5DB"/>
+  <circle cx="450" cy="380" r="20" fill="#D1D5DB"/>
+</svg>

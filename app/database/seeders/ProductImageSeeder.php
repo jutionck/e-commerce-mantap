@@ -17,13 +17,13 @@ class ProductImageSeeder extends Seeder
         $products = Product::all();
 
         foreach ($products as $product) {
-            // Create 5 images per product
+            // Create 5 images per product using the same image for all variations
             $imageVariations = [
                 'main' => $product->image, // Use existing image as main
-                'angle1' => str_replace('random=', 'angle1&random=', $product->image ?? ''),
-                'angle2' => str_replace('random=', 'angle2&random=', $product->image ?? ''),
-                'detail1' => str_replace('random=', 'detail1&random=', $product->image ?? ''),
-                'detail2' => str_replace('random=', 'detail2&random=', $product->image ?? ''),
+                'angle1' => $product->image, // Same image for now
+                'angle2' => $product->image, // Same image for now  
+                'detail1' => $product->image, // Same image for now
+                'detail2' => $product->image, // Same image for now
             ];
 
             $sortOrder = 0;

@@ -18,13 +18,13 @@ class ProductFactory extends Factory
     {
         $name = $this->faker->words(3, true);
         
-        // Use online placeholder images for demo
+        // Use local demo images
         $imageUrls = [
-            'https://via.placeholder.com/800x600/4F46E5/FFFFFF?text=Product+1',
-            'https://via.placeholder.com/800x600/7C3AED/FFFFFF?text=Product+2',
-            'https://via.placeholder.com/800x600/EC4899/FFFFFF?text=Product+3',
-            'https://via.placeholder.com/800x600/10B981/FFFFFF?text=Product+4',
-            'https://via.placeholder.com/800x600/F59E0B/FFFFFF?text=Product+5',
+            '/images/demo/kemeja.svg',
+            '/images/demo/gaun.svg', 
+            '/images/demo/smartphone.svg',
+            '/images/demo/novel.svg',
+            '/images/demo/serum.svg',
         ];
 
         return [
