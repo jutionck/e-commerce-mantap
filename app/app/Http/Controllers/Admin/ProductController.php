@@ -60,6 +60,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
+            'image' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
         ]);
@@ -69,6 +70,7 @@ class ProductController extends Controller
             'slug' => Str::slug($request->name),
             'category_id' => $request->category_id,
             'description' => $request->description,
+            'image' => $request->image,
             'price' => $request->price,
             'stock' => $request->stock,
         ]);
@@ -111,6 +113,7 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'description' => 'nullable|string',
+            'image' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
         ]);
@@ -120,6 +123,7 @@ class ProductController extends Controller
             'slug' => Str::slug($request->name),
             'category_id' => $request->category_id,
             'description' => $request->description,
+            'image' => $request->image,
             'price' => $request->price,
             'stock' => $request->stock,
         ]);

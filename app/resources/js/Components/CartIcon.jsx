@@ -97,7 +97,7 @@ export default function CartIcon({ cart = {}, className = "" }) {
                                         <div key={productId} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded-lg transition duration-150">
                                             <div className="flex-shrink-0 w-12 h-12 bg-gray-200 rounded-lg overflow-hidden">
                                                 <img 
-                                                    src="/images/product_placeholder.png" 
+                                                    src={item.image || "/images/product_placeholder.png"}
                                                     alt={item.name}
                                                     className="w-full h-full object-cover"
                                                 />

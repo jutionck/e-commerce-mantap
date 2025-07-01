@@ -39,7 +39,7 @@ function CartItem({ item, productId }) {
                     {/* Product Image */}
                     <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                         <img 
-                            src="/images/product_placeholder.png" 
+                            src={item.image || "/images/product_placeholder.png"}
                             alt={item.name}
                             className="w-full h-full object-cover"
                         />

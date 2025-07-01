@@ -76,7 +76,7 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                     <div className="space-y-4">
                         <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
                             <img
-                                src="/images/product_placeholder.png"
+                                src={product.image || "/images/product_placeholder.png"}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
@@ -87,7 +87,7 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                             {[1, 2, 3, 4].map((index) => (
                                 <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-colors">
                                     <img
-                                        src="/images/product_placeholder.png"
+                                        src={product.image || "/images/product_placeholder.png"}
                                         alt={`${product.name} view ${index}`}
                                         className="w-full h-full object-cover"
                                     />
@@ -374,7 +374,7 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                                         <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
                                             <div className="relative h-48 bg-gray-100 overflow-hidden">
                                                 <img
-                                                    src="/images/product_placeholder.png"
+                                                    src={relatedProduct.image || "/images/product_placeholder.png"}
                                                     alt={relatedProduct.name}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />
