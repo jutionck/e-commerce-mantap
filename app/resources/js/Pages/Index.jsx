@@ -230,7 +230,7 @@ export default function Index({ auth, products, categories }) {
                                             {/* Product Image */}
                                             <div className="relative h-48 bg-gray-100 overflow-hidden">
                                                 <img
-                                                    src={product.image || "/images/product_placeholder.png"}
+                                                    src={product.primary_image || product.image || "/images/product_placeholder.png"}
                                                     alt={product.name}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />

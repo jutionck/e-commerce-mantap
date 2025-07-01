@@ -36,4 +36,41 @@ class Product extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProductImage::class)->orderBy('sort_order');
+    }
+
+    public function primaryImage(): ?string
+    {
+        $primaryImage = $this->images()->where('is_primary', true)->first();
+        if ($primaryImage) {
+            return $primaryImage->image_url;
+        }
+        
+        $firstImage = $this->images()->first();
+        if ($firstImage) {
+            return $firstImage->image_url;
+        }
+        
+        return $this->image; // fallback to single image field
+    }
+
+    public function allImages(): array
+    {
+        $images = $this->images()->get()->pluck('image_url')->toArray();
+        
+        // If no images in product_images table, use the single image field
+        if (empty($images) && $this->image) {
+            return [$this->image, $this->image, $this->image, $this->image, $this->image]; // 5 images for demo
+        }
+        
+        // Ensure we have at least 5 images for the gallery
+        while (count($images) < 5) {
+            $images[] = $images[0] ?? '/images/product_placeholder.png';
+        }
+        
+        return array_slice($images, 0, 5);
+    }
 }

@@ -5,6 +5,7 @@ import PublicLayout from '@/Layouts/PublicLayout';
 export default function Show({ auth, product, relatedProducts = [] }) {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState('description');
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
     const { setData, post, processing, errors } = useForm({
         product_id: product.id,
@@ -26,6 +27,11 @@ export default function Show({ auth, product, relatedProducts = [] }) {
     };
 
     const stockStatus = getStockStatus(product.stock);
+
+    // Get images array, with fallback to single image or placeholder
+    const productImages = product.all_images || [
+        product.primary_image || product.image || "/images/product_placeholder.png"
+    ];
 
     const handleQuantityChange = (newQuantity) => {
         const quantity = Math.max(1, Math.min(newQuantity, product.stock));
@@ -74,21 +80,30 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
                     {/* Product Images */}
                     <div className="space-y-4">
+                        {/* Main Product Image */}
                         <div className="aspect-square bg-gray-100 rounded-xl overflow-hidden">
                             <img
-                                src={product.image || "/images/product_placeholder.png"}
+                                src={productImages[selectedImageIndex] || "/images/product_placeholder.png"}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
                         </div>
                         
-                        {/* Thumbnail Gallery (Placeholder for multiple images) */}
-                        <div className="grid grid-cols-4 gap-2">
-                            {[1, 2, 3, 4].map((index) => (
-                                <div key={index} className="aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-blue-500 transition-colors">
+                        {/* Thumbnail Gallery */}
+                        <div className="grid grid-cols-5 gap-2">
+                            {productImages.slice(0, 5).map((image, index) => (
+                                <div 
+                                    key={index} 
+                                    className={`aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer border-2 transition-colors ${
+                                        selectedImageIndex === index 
+                                            ? 'border-blue-500' 
+                                            : 'border-transparent hover:border-blue-300'
+                                    }`}
+                                    onClick={() => setSelectedImageIndex(index)}
+                                >
                                     <img
-                                        src={product.image || "/images/product_placeholder.png"}
-                                        alt={`${product.name} view ${index}`}
+                                        src={image || "/images/product_placeholder.png"}
+                                        alt={`${product.name} view ${index + 1}`}
                                         className="w-full h-full object-cover"
                                     />
                                 </div>
@@ -374,7 +389,7 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                                         <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100">
                                             <div className="relative h-48 bg-gray-100 overflow-hidden">
                                                 <img
-                                                    src={relatedProduct.image || "/images/product_placeholder.png"}
+                                                    src={relatedProduct.primary_image || relatedProduct.image || "/images/product_placeholder.png"}
                                                     alt={relatedProduct.name}
                                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                 />
