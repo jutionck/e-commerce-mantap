@@ -213,10 +213,10 @@ Klik "Lihat Detail" untuk melihat:
 
 #### Navigation
 - **Dashboard:** Overview statistics
-- **Products:** Product management (coming soon)
-- **Categories:** Category management (coming soon)  
-- **Orders:** Order management (coming soon)
-- **Users:** User management (coming soon)
+- **Products:** Product management (CRUD operations) ✅
+- **Categories:** Category management (CRUD operations) ✅  
+- **Orders:** Order management dengan advanced filtering ✅
+- **Users:** User management dengan role control ✅
 - **Back to Store:** Kembali ke frontend store
 
 #### Security Features
@@ -251,6 +251,148 @@ Klik "Lihat Detail" untuk melihat:
 - **Back to Store:** Easy switch antara admin dan customer view
 - **Responsive:** Works on mobile dan desktop
 - **Admin Badge:** Clear indication you're in admin mode
+
+### Product Management (Admin)
+
+#### Mengakses Product Management
+1. Login sebagai admin
+2. Akses admin panel (/admin)
+3. Klik menu **"Products"** di navigation
+4. Akan masuk ke halaman product listing
+
+#### Melihat Daftar Produk
+**Halaman Products Index** menampilkan:
+- **Table View:** Daftar semua produk dalam format table
+- **Product Info:** Nama, kategori, harga, stok per produk
+- **Stock Status:** Visual indicator (In Stock/Low Stock/Out of Stock)
+- **Actions:** View, Edit, Delete buttons per produk
+- **Pagination:** Navigation untuk produk banyak
+
+#### Mencari dan Filter Produk
+**Search Features:**
+- **Search Box:** Cari berdasarkan nama atau deskripsi produk
+- **Category Filter:** Filter produk berdasarkan kategori
+- **Combined Search:** Bisa kombinasi search text + category filter
+- **Clear Filters:** Button untuk reset semua filter
+
+**Cara Menggunakan:**
+1. Ketik kata kunci di search box
+2. Pilih kategori dari dropdown (optional)
+3. Klik "Search" untuk apply filter
+4. Klik "Clear" untuk reset filter
+
+#### Menambah Produk Baru
+1. **Di halaman Products**, klik **"Add New Product"**
+2. **Isi Form:**
+   - **Product Name:** Nama produk (required)
+   - **Category:** Pilih dari dropdown (required)
+   - **Price:** Harga dalam IDR (required)
+   - **Stock:** Jumlah stok (required)
+   - **Description:** Deskripsi produk (optional)
+3. **Validasi:** Form akan validasi input otomatis
+4. **Submit:** Klik "Create Product"
+5. **Success:** Redirect ke product listing dengan success message
+
+#### Melihat Detail Produk
+1. **Di product listing**, klik **"View"** pada produk
+2. **Product Detail Page** menampilkan:
+   - **Basic Information:** Nama, kategori, slug, deskripsi
+   - **Pricing & Inventory:** Harga, stok, stock value total
+   - **Product Metadata:** ID, created date, last updated
+   - **Actions:** Edit, View in Store, Create Similar, Delete
+
+#### Mengedit Produk
+1. **Di product listing/detail**, klik **"Edit"**
+2. **Form Pre-filled:** Semua data existing sudah terisi
+3. **Edit Fields:** Ubah field yang perlu diupdate
+4. **Product Info Box:** Menampilkan ID, slug, created/updated date
+5. **Submit:** Klik "Update Product"
+6. **Auto Slug:** Slug otomatis update jika nama berubah
+
+#### Menghapus Produk
+**Soft Delete System:**
+- **Delete Button:** Available di product listing dan detail page
+- **Confirmation:** Popup konfirmasi sebelum delete
+- **Soft Delete:** Produk di-archive, tidak hilang permanent
+- **Orders Preserved:** Order yang sudah ada tidak terpengaruh
+
+**Cara Delete:**
+1. Klik "Delete" button
+2. Confirm di popup dialog
+3. Produk akan dihapus dari listing
+4. Data masih tersimpan di database (soft delete)
+
+#### Tips Product Management
+**Best Practices:**
+- **Stock Management:** Update stok secara regular
+- **Descriptive Names:** Gunakan nama produk yang jelas
+- **Proper Categories:** Assign kategori yang sesuai
+- **Competitive Pricing:** Set harga yang kompetitif
+- **Regular Updates:** Update info produk secara berkala
+
+**Security & Validation:**
+- **Admin Only:** Hanya admin yang bisa akses
+- **Form Validation:** Semua input di-validate
+- **Error Handling:** Clear error messages
+- **Success Feedback:** Confirmation untuk setiap action
+
+**Performance Features:**
+- **Pagination:** Handle banyak produk
+- **Search & Filter:** Quick access ke produk specific
+- **Responsive Design:** Works di semua devices
+- **Professional UI:** Clean, modern interface
+
+### Category Management (Admin) ✅
+
+#### Mengakses Category Management
+1. Login sebagai admin
+2. Akses admin panel (/admin)
+3. Klik menu **"Categories"** di navigation
+4. Akan masuk ke halaman category listing
+
+#### Fitur Category Management
+**Yang Sudah Tersedia:**
+- ✅ **Daftar Kategori:** View semua kategori dengan search & pagination
+- ✅ **Tambah Kategori:** Create kategori baru dengan form validation
+- ✅ **Edit Kategori:** Update kategori existing
+- ✅ **Detail Kategori:** View detail dengan product count
+- ✅ **Delete Protection:** Tidak bisa delete kategori yang memiliki produk
+- ✅ **Search Function:** Cari kategori berdasarkan nama/deskripsi
+
+### Order Management (Admin) ✅
+
+#### Mengakses Order Management
+1. Login sebagai admin
+2. Akses admin panel (/admin)
+3. Klik menu **"Orders"** di navigation
+4. Akan masuk ke halaman order listing
+
+#### Fitur Order Management
+**Yang Sudah Tersedia:**
+- ✅ **Advanced Filtering:** Search by order number, customer name, status, date range
+- ✅ **Order Details:** View comprehensive order information
+- ✅ **Status Updates:** Update order status (pending → processing → shipped → completed)
+- ✅ **Customer Info:** Display customer contact & shipping details
+- ✅ **CSV Export:** Export order data untuk reporting
+- ✅ **Professional Interface:** Clean, responsive design
+
+### User Management (Admin) ✅
+
+#### Mengakses User Management
+1. Login sebagai admin
+2. Akses admin panel (/admin)
+3. Klik menu **"Users"** di navigation
+4. Akan masuk ke halaman user listing
+
+#### Fitur User Management
+**Yang Sudah Tersedia:**
+- ✅ **User Listing:** Daftar semua users dengan filtering (role, status, date range)
+- ✅ **Create Users:** Buat user baru dengan role assignment
+- ✅ **Edit Users:** Update user info, role, dan password
+- ✅ **User Details:** View comprehensive user info dengan order history
+- ✅ **Status Toggle:** Activate/deactivate user accounts
+- ✅ **Security Features:** Tidak bisa delete/deactivate diri sendiri
+- ✅ **Order Protection:** Tidak bisa delete user yang memiliki orders
 
 ## Tips Penggunaan
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,18 +10,22 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Order extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'user_id',
         'order_number',
-        'total_amount',
+        'total',
         'status',
         'shipping_address',
         'shipping_method',
         'shipping_cost',
+        'payment_method',
+        'payment_status',
+        'notes',
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
+        'total' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
         'shipping_address' => 'array',
     ];

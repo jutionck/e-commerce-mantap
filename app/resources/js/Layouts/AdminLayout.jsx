@@ -30,25 +30,25 @@ export default function AdminLayout({ header, children }) {
                                     Dashboard
                                 </NavLink>
                                 <NavLink
-                                    href="#"
+                                    href={route('admin.products.index')}
                                     active={route().current('admin.products.*')}
                                 >
                                     Products
                                 </NavLink>
                                 <NavLink
-                                    href="#"
+                                    href={route('admin.categories.index')}
                                     active={route().current('admin.categories.*')}
                                 >
                                     Categories
                                 </NavLink>
                                 <NavLink
-                                    href="#"
+                                    href={route('admin.orders.index')}
                                     active={route().current('admin.orders.*')}
                                 >
                                     Orders
                                 </NavLink>
                                 <NavLink
-                                    href="#"
+                                    href={route('admin.users.index')}
                                     active={route().current('admin.users.*')}
                                 >
                                     Users
@@ -167,25 +167,25 @@ export default function AdminLayout({ header, children }) {
                             Dashboard
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href="#"
+                            href={route('admin.products.index')}
                             active={route().current('admin.products.*')}
                         >
                             Products
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href="#"
+                            href={route('admin.categories.index')}
                             active={route().current('admin.categories.*')}
                         >
                             Categories
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href="#"
+                            href={route('admin.orders.index')}
                             active={route().current('admin.orders.*')}
                         >
                             Orders
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
-                            href="#"
+                            href={route('admin.users.index')}
                             active={route().current('admin.users.*')}
                         >
                             Users
