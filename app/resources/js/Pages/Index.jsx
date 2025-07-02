@@ -8,13 +8,25 @@ import { Input } from '@/Components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/Select';
 import Carousel from '@/Components/Carousel';
 import FlashSaleSection from '@/Components/FlashSaleSection';
-import CountdownTimer from '@/Components/CountdownTimer';
 
-export default function Index({ auth, products, categories }) {
+export default function Index({ auth, products = [], categories = [] }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [sortBy, setSortBy] = useState('name');
     const [viewMode, setViewMode] = useState('grid');
+
+    // Enhanced product data with ratings for demonstration
+    const enhancedProducts = useMemo(() => {
+        if (!products || !Array.isArray(products)) return [];
+        
+        return products.map(product => ({
+            ...product,
+            rating: product.rating || (4.0 + Math.random() * 1.0), // Demo ratings
+            reviews: product.reviews || Math.floor(Math.random() * 200) + 10,
+            highlights: product.highlights || [], // Demo highlights
+            soldCount: product.soldCount || Math.floor(Math.random() * 100) + 20
+        }));
+    }, [products]);
 
     // Filter dan sort products
     const filteredProducts = useMemo(() => {
@@ -30,7 +42,9 @@ export default function Index({ auth, products, categories }) {
 
         // Filter by category
         if (selectedCategory && selectedCategory !== 'all') {
-            filtered = filtered.filter(product => product.category.id.toString() === selectedCategory);
+            filtered = filtered.filter(product => 
+                product.category && product.category.id && product.category.id.toString() === selectedCategory
+            );
         }
 
         // Sort products
@@ -75,15 +89,6 @@ export default function Index({ auth, products, categories }) {
     };
 
     const hasActiveFilters = searchTerm || selectedCategory !== 'all' || sortBy !== 'name';
-
-    // Enhanced product data with ratings for demonstration
-    const enhancedProducts = products.map(product => ({
-        ...product,
-        rating: product.rating || (4.0 + Math.random() * 1.0), // Demo ratings
-        reviews: product.reviews || Math.floor(Math.random() * 200) + 10,
-        highlights: product.highlights || [], // Demo highlights
-        soldCount: product.soldCount || Math.floor(Math.random() * 100) + 20
-    }));
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -142,7 +147,7 @@ export default function Index({ auth, products, categories }) {
                                             </SelectTrigger>
                                             <SelectContent>
                                                 <SelectItem value="all">All Categories</SelectItem>
-                                                {categories.map((category) => (
+                                                {categories && categories.map((category) => (
                                                     <SelectItem key={category.id} value={category.id.toString()}>
                                                         <div className="flex items-center gap-2">
                                                             <span>📦</span>
@@ -227,11 +232,11 @@ export default function Index({ auth, products, categories }) {
                                 <CardContent className="p-4 text-center">
                                     <div className="text-3xl mb-2">🛍️</div>
                                     <div className="text-sm font-medium">All Products</div>
-                                    <div className="text-xs text-gray-500 mt-1">{products.length} items</div>
+                                    <div className="text-xs text-gray-500 mt-1">{products ? products.length : 0} items</div>
                                 </CardContent>
                             </Card>
 
-                            {categories.map((category) => (
+                            {categories && categories.map((category) => (
                                 <Card
                                     key={category.id}
                                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg ${
@@ -243,7 +248,7 @@ export default function Index({ auth, products, categories }) {
                                         <div className="text-3xl mb-2">📦</div>
                                         <div className="text-sm font-medium">{category.name}</div>
                                         <div className="text-xs text-gray-500 mt-1">
-                                            {products.filter(p => p.category.id === category.id).length} items
+                                            {products ? products.filter(p => p.category && p.category.id === category.id).length : 0} items
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -257,7 +262,7 @@ export default function Index({ auth, products, categories }) {
                             <h2 className="text-2xl font-bold text-gray-900">Products</h2>
                             {filteredProducts.length > 0 && (
                                 <div className="text-sm text-gray-500">
-                                    Showing {filteredProducts.length} of {products.length} products
+                                    Showing {filteredProducts.length} of {products ? products.length : 0} products
                                 </div>
                             )}
                         </div>
@@ -302,6 +307,9 @@ export default function Index({ auth, products, categories }) {
                                                                     src={product.primary_image || product.image || "/images/product_placeholder.svg"}
                                                                     alt={product.name}
                                                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                                    onError={(e) => {
+                                                                        e.target.src = "/images/product_placeholder.svg";
+                                                                    }}
                                                                 />
                                                             </Link>
 
@@ -341,7 +349,7 @@ export default function Index({ auth, products, categories }) {
                                                         {/* Product Info */}
                                                         <div className="p-4">
                                                             <Badge variant="outline" className="text-xs mb-2">
-                                                                {product.category.name}
+                                                                {product.category?.name || 'Uncategorized'}
                                                             </Badge>
 
                                                             <Link href={`/products/${product.id}`}>
@@ -423,6 +431,9 @@ export default function Index({ auth, products, categories }) {
                                                                     src={product.primary_image || product.image || "/images/product_placeholder.svg"}
                                                                     alt={product.name}
                                                                     className="w-full h-full object-cover"
+                                                                    onError={(e) => {
+                                                                        e.target.src = "/images/product_placeholder.svg";
+                                                                    }}
                                                                 />
                                                             </Link>
                                                         </div>
@@ -431,7 +442,7 @@ export default function Index({ auth, products, categories }) {
                                                             <div className="flex items-start justify-between">
                                                                 <div className="flex-1">
                                                                     <Badge variant="outline" className="text-xs mb-1">
-                                                                        {product.category.name}
+                                                                        {product.category?.name || 'Uncategorized'}
                                                                     </Badge>
                                                                     <Link href={`/products/${product.id}`}>
                                                                         <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
