@@ -17,11 +17,11 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         $name = $this->faker->words(3, true);
-        
+
         // Use local demo images
         $imageUrls = [
             '/images/demo/kemeja.svg',
-            '/images/demo/gaun.svg', 
+            '/images/demo/gaun.svg',
             '/images/demo/smartphone.svg',
             '/images/demo/novel.svg',
             '/images/demo/serum.svg',

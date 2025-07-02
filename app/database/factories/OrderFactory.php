@@ -19,7 +19,7 @@ class OrderFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'order_number' => 'ORD-' . strtoupper($this->faker->bothify('????####')),
+            'order_number' => 'ORD-'.strtoupper($this->faker->bothify('????####')),
             'status' => $this->faker->randomElement(['pending', 'processing', 'shipped', 'completed', 'cancelled']),
             'total' => $this->faker->numberBetween(50000, 1000000),
             'shipping_method' => $this->faker->randomElement(['JNE', 'JNT', 'POS Indonesia']),

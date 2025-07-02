@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -20,12 +19,12 @@ class OrderController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', '%' . $search . '%')
-                               ->orWhere('email', 'like', '%' . $search . '%');
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -38,7 +37,7 @@ class OrderController extends Controller
         if ($request->has('date_from') && $request->date_from) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
-        
+
         if ($request->has('date_to') && $request->date_to) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
@@ -47,17 +46,17 @@ class OrderController extends Controller
 
         $statusOptions = [
             'pending' => 'Pending',
-            'confirmed' => 'Confirmed', 
+            'confirmed' => 'Confirmed',
             'processing' => 'Processing',
             'shipped' => 'Shipped',
             'delivered' => 'Delivered',
-            'cancelled' => 'Cancelled'
+            'cancelled' => 'Cancelled',
         ];
 
         return Inertia::render('Admin/Orders/Index', [
             'orders' => $orders,
             'statusOptions' => $statusOptions,
-            'filters' => $request->only(['search', 'status', 'date_from', 'date_to'])
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to']),
         ]);
     }
 
@@ -67,9 +66,9 @@ class OrderController extends Controller
     public function show(Order $order)
     {
         $order->load(['user', 'orderItems.product.category']);
-        
+
         return Inertia::render('Admin/Orders/Show', [
-            'order' => $order
+            'order' => $order,
         ]);
     }
 
@@ -79,11 +78,11 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled'
+            'status' => 'required|in:pending,confirmed,processing,shipped,delivered,cancelled',
         ]);
 
         $order->update([
-            'status' => $request->status
+            'status' => $request->status,
         ]);
 
         return redirect()->back()->with('success', 'Order status updated successfully.');
@@ -99,12 +98,12 @@ class OrderController extends Controller
         // Apply same filters as index
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('order_number', 'like', '%' . $search . '%')
-                  ->orWhereHas('user', function($userQuery) use ($search) {
-                      $userQuery->where('name', 'like', '%' . $search . '%')
-                               ->orWhere('email', 'like', '%' . $search . '%');
-                  });
+            $query->where(function ($q) use ($search) {
+                $q->where('order_number', 'like', '%'.$search.'%')
+                    ->orWhereHas('user', function ($userQuery) use ($search) {
+                        $userQuery->where('name', 'like', '%'.$search.'%')
+                            ->orWhere('email', 'like', '%'.$search.'%');
+                    });
             });
         }
 
@@ -115,7 +114,7 @@ class OrderController extends Controller
         if ($request->has('date_from') && $request->date_from) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
-        
+
         if ($request->has('date_to') && $request->date_to) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
@@ -131,7 +130,7 @@ class OrderController extends Controller
             'Total Amount',
             'Items Count',
             'Order Date',
-            'Shipping Address'
+            'Shipping Address',
         ];
 
         foreach ($orders as $order) {
@@ -143,23 +142,23 @@ class OrderController extends Controller
                 number_format($order->total_amount, 2),
                 $order->orderItems->count(),
                 $order->created_at->format('Y-m-d H:i:s'),
-                is_array($order->shipping_address) 
+                is_array($order->shipping_address)
                     ? implode(', ', array_filter($order->shipping_address))
-                    : $order->shipping_address
+                    : $order->shipping_address,
             ];
         }
 
-        $filename = 'orders_export_' . date('Y-m-d_H-i-s') . '.csv';
-        
+        $filename = 'orders_export_'.date('Y-m-d_H-i-s').'.csv';
+
         $handle = fopen('php://output', 'w');
-        
+
         header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-        
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
+
         foreach ($csvData as $row) {
             fputcsv($handle, $row);
         }
-        
+
         fclose($handle);
         exit;
     }

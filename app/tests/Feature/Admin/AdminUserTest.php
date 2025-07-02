@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -17,7 +17,7 @@ class AdminUserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->admin = User::factory()->create([
             'role' => 'admin',
             'email_verified_at' => now(),
@@ -32,9 +32,8 @@ class AdminUserTest extends TestCase
             ->get(route('admin.users.index'));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->component('Admin/Users/Index')
-                ->has('users.data', 6) // 5 created + 1 admin
+        $response->assertInertia(fn ($page) => $page->component('Admin/Users/Index')
+            ->has('users.data', 6) // 5 created + 1 admin
         );
     }
 
@@ -47,9 +46,8 @@ class AdminUserTest extends TestCase
             ->get(route('admin.users.index', ['search' => 'john']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->has('users.data', 1)
-                ->where('users.data.0.name', 'John Doe')
+        $response->assertInertia(fn ($page) => $page->has('users.data', 1)
+            ->where('users.data.0.name', 'John Doe')
         );
     }
 
@@ -62,8 +60,7 @@ class AdminUserTest extends TestCase
             ->get(route('admin.users.index', ['role' => 'admin']));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->has('users.data', 3) // 2 created + 1 setup admin
+        $response->assertInertia(fn ($page) => $page->has('users.data', 3) // 2 created + 1 setup admin
         );
     }
 
@@ -75,12 +72,11 @@ class AdminUserTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->get(route('admin.users.index', [
                 'date_from' => now()->subDays(5)->format('Y-m-d'),
-                'date_to' => now()->format('Y-m-d')
+                'date_to' => now()->format('Y-m-d'),
             ]));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->has('users.data', 2) // 1 new user + 1 admin
+        $response->assertInertia(fn ($page) => $page->has('users.data', 2) // 1 new user + 1 admin
         );
     }
 
@@ -93,11 +89,10 @@ class AdminUserTest extends TestCase
             ->get(route('admin.users.show', $user));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->component('Admin/Users/Show')
-                ->where('user.id', $user->id)
-                ->where('user.name', $user->name)
-                ->has('user.orders', 3)
+        $response->assertInertia(fn ($page) => $page->component('Admin/Users/Show')
+            ->where('user.id', $user->id)
+            ->where('user.name', $user->name)
+            ->has('user.orders', 3)
         );
     }
 
@@ -108,7 +103,7 @@ class AdminUserTest extends TestCase
             'email' => 'newuser@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'role' => 'customer'
+            'role' => 'customer',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -134,7 +129,7 @@ class AdminUserTest extends TestCase
             'email' => 'newadmin@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'role' => 'admin'
+            'role' => 'admin',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -165,7 +160,7 @@ class AdminUserTest extends TestCase
                 'email' => $existingUser->email,
                 'password' => 'password123',
                 'password_confirmation' => 'password123',
-                'role' => 'customer'
+                'role' => 'customer',
             ]);
 
         $response->assertSessionHasErrors(['email']);
@@ -178,7 +173,7 @@ class AdminUserTest extends TestCase
         $updateData = [
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
-            'role' => 'admin'
+            'role' => 'admin',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -203,7 +198,7 @@ class AdminUserTest extends TestCase
             'email' => $user->email,
             'role' => $user->role,
             'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123'
+            'password_confirmation' => 'newpassword123',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -225,7 +220,7 @@ class AdminUserTest extends TestCase
             'email' => $user->email,
             'role' => $user->role,
             'password' => '',
-            'password_confirmation' => ''
+            'password_confirmation' => '',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -247,7 +242,7 @@ class AdminUserTest extends TestCase
             ->put(route('admin.users.update', $user1), [
                 'name' => $user1->name,
                 'email' => $user2->email,
-                'role' => $user1->role
+                'role' => $user1->role,
             ]);
 
         $response->assertSessionHasErrors(['email']);
@@ -349,11 +344,11 @@ class AdminUserTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->get(route('admin.users.index'));
 
-        $response->assertInertia(fn ($page) => 
-            $page->has('users.data', function ($users) use ($user) {
-                $foundUser = collect($users)->firstWhere('id', $user->id);
-                return $foundUser && $foundUser['orders_count'] === 3;
-            })
+        $response->assertInertia(fn ($page) => $page->has('users.data', function ($users) use ($user) {
+            $foundUser = collect($users)->firstWhere('id', $user->id);
+
+            return $foundUser && $foundUser['orders_count'] === 3;
+        })
         );
     }
 
@@ -365,8 +360,7 @@ class AdminUserTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->get(route('admin.users.show', $user));
 
-        $response->assertInertia(fn ($page) => 
-            $page->has('user.orders', 2)
+        $response->assertInertia(fn ($page) => $page->has('user.orders', 2)
         );
     }
 
@@ -376,8 +370,7 @@ class AdminUserTest extends TestCase
             ->get(route('admin.users.create'));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->component('Admin/Users/Create')
+        $response->assertInertia(fn ($page) => $page->component('Admin/Users/Create')
         );
     }
 
@@ -389,9 +382,8 @@ class AdminUserTest extends TestCase
             ->get(route('admin.users.edit', $user));
 
         $response->assertStatus(200);
-        $response->assertInertia(fn ($page) => 
-            $page->component('Admin/Users/Edit')
-                ->where('user.id', $user->id)
+        $response->assertInertia(fn ($page) => $page->component('Admin/Users/Edit')
+            ->where('user.id', $user->id)
         );
     }
 
@@ -400,10 +392,9 @@ class AdminUserTest extends TestCase
         $response = $this->actingAs($this->admin)
             ->get(route('admin.users.index'));
 
-        $response->assertInertia(fn ($page) => 
-            $page->has('roleOptions')
-                ->where('roleOptions.admin', 'Administrator')
-                ->where('roleOptions.customer', 'Customer')
+        $response->assertInertia(fn ($page) => $page->has('roleOptions')
+            ->where('roleOptions.admin', 'Administrator')
+            ->where('roleOptions.customer', 'Customer')
         );
     }
 }

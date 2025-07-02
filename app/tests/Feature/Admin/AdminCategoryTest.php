@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,6 +13,7 @@ class AdminCategoryTest extends TestCase
     use RefreshDatabase;
 
     private $admin;
+
     private $customer;
 
     protected function setUp(): void
@@ -21,11 +22,11 @@ class AdminCategoryTest extends TestCase
 
         $this->admin = User::factory()->create([
             'role' => 'admin',
-            'admin_verified_at' => now()
+            'admin_verified_at' => now(),
         ]);
 
         $this->customer = User::factory()->create([
-            'role' => 'customer'
+            'role' => 'customer',
         ]);
     }
 
@@ -33,7 +34,7 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Test Category',
-            'slug' => 'test-category'
+            'slug' => 'test-category',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -75,7 +76,7 @@ class AdminCategoryTest extends TestCase
     public function test_admin_can_create_category()
     {
         $categoryData = [
-            'name' => 'New Category'
+            'name' => 'New Category',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -86,7 +87,7 @@ class AdminCategoryTest extends TestCase
 
         $this->assertDatabaseHas('categories', [
             'name' => 'New Category',
-            'slug' => 'new-category'
+            'slug' => 'new-category',
         ]);
     }
 
@@ -94,7 +95,7 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Test Category',
-            'slug' => 'test-category'
+            'slug' => 'test-category',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -111,7 +112,7 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Test Category',
-            'slug' => 'test-category'
+            'slug' => 'test-category',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -128,11 +129,11 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Original Category',
-            'slug' => 'original-category'
+            'slug' => 'original-category',
         ]);
 
         $updateData = [
-            'name' => 'Updated Category'
+            'name' => 'Updated Category',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -144,7 +145,7 @@ class AdminCategoryTest extends TestCase
         $this->assertDatabaseHas('categories', [
             'id' => $category->id,
             'name' => 'Updated Category',
-            'slug' => 'updated-category'
+            'slug' => 'updated-category',
         ]);
     }
 
@@ -152,7 +153,7 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Empty Category',
-            'slug' => 'empty-category'
+            'slug' => 'empty-category',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -162,7 +163,7 @@ class AdminCategoryTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertDatabaseMissing('categories', [
-            'id' => $category->id
+            'id' => $category->id,
         ]);
     }
 
@@ -170,11 +171,11 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Category with Products',
-            'slug' => 'category-with-products'
+            'slug' => 'category-with-products',
         ]);
 
         Product::factory()->create([
-            'category_id' => $category->id
+            'category_id' => $category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -184,7 +185,7 @@ class AdminCategoryTest extends TestCase
             ->assertSessionHas('error');
 
         $this->assertDatabaseHas('categories', [
-            'id' => $category->id
+            'id' => $category->id,
         ]);
     }
 
@@ -192,12 +193,12 @@ class AdminCategoryTest extends TestCase
     {
         Category::create([
             'name' => 'Electronics',
-            'slug' => 'electronics'
+            'slug' => 'electronics',
         ]);
 
         Category::create([
             'name' => 'Books',
-            'slug' => 'books'
+            'slug' => 'books',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -215,12 +216,12 @@ class AdminCategoryTest extends TestCase
     {
         Category::create([
             'name' => 'Unique Category',
-            'slug' => 'unique-category'
+            'slug' => 'unique-category',
         ]);
 
         $response = $this->actingAs($this->admin)
             ->post(route('admin.categories.store'), [
-                'name' => 'Unique Category'
+                'name' => 'Unique Category',
             ]);
 
         $response->assertSessionHasErrors(['name']);
@@ -230,7 +231,7 @@ class AdminCategoryTest extends TestCase
     {
         $response = $this->actingAs($this->admin)
             ->post(route('admin.categories.store'), [
-                'name' => ''
+                'name' => '',
             ]);
 
         $response->assertSessionHasErrors(['name']);
@@ -240,11 +241,11 @@ class AdminCategoryTest extends TestCase
     {
         $category = Category::create([
             'name' => 'Test Category',
-            'slug' => 'test-category'
+            'slug' => 'test-category',
         ]);
 
         Product::factory()->count(3)->create([
-            'category_id' => $category->id
+            'category_id' => $category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -261,7 +262,7 @@ class AdminCategoryTest extends TestCase
     {
         $response = $this->actingAs($this->customer)
             ->post(route('admin.categories.store'), [
-                'name' => 'New Category'
+                'name' => 'New Category',
             ]);
 
         $response->assertStatus(403);
@@ -270,7 +271,7 @@ class AdminCategoryTest extends TestCase
     public function test_guest_cannot_create_category()
     {
         $response = $this->post(route('admin.categories.store'), [
-            'name' => 'New Category'
+            'name' => 'New Category',
         ]);
 
         $response->assertRedirect(route('login'));

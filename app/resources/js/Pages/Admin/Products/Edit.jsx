@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import ProductImageManager from '@/Components/Admin/ProductImageManager';
 
 export default function Edit({ product, categories }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -142,10 +143,10 @@ export default function Edit({ product, categories }) {
                                     </div>
                                 </div>
 
-                                {/* Image URL */}
+                                {/* Legacy Image URL - Keep for fallback */}
                                 <div>
                                     <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Image URL
+                                        Fallback Image URL
                                     </label>
                                     <input
                                         type="url"
@@ -161,7 +162,7 @@ export default function Edit({ product, categories }) {
                                         <p className="mt-1 text-sm text-red-600">{errors.image}</p>
                                     )}
                                     <p className="mt-1 text-sm text-gray-500">
-                                        Enter a valid image URL for the product. Leave empty to use default placeholder.
+                                        Fallback image URL. The uploaded images below will take priority.
                                     </p>
                                 </div>
 
@@ -229,6 +230,14 @@ export default function Edit({ product, categories }) {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+
+                    {/* Product Image Management */}
+                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg mt-6">
+                        <div className="p-6">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Product Images</h3>
+                            <ProductImageManager product={product} />
                         </div>
                     </div>
                 </div>

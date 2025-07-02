@@ -19,14 +19,14 @@ class CategoryController extends Controller
 
         // Search functionality
         if ($request->has('search') && $request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%');
         }
 
         $categories = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('Admin/Categories/Index', [
             'categories' => $categories,
-            'filters' => $request->only(['search'])
+            'filters' => $request->only(['search']),
         ]);
     }
 
@@ -61,12 +61,12 @@ class CategoryController extends Controller
      */
     public function show(Category $category)
     {
-        $category->load(['products' => function($query) {
+        $category->load(['products' => function ($query) {
             $query->latest()->take(10);
         }]);
-        
+
         return Inertia::render('Admin/Categories/Show', [
-            'category' => $category
+            'category' => $category,
         ]);
     }
 
@@ -76,7 +76,7 @@ class CategoryController extends Controller
     public function edit(Category $category)
     {
         return Inertia::render('Admin/Categories/Edit', [
-            'category' => $category
+            'category' => $category,
         ]);
     }
 
@@ -86,7 +86,7 @@ class CategoryController extends Controller
     public function update(Request $request, Category $category)
     {
         $request->validate([
-            'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
+            'name' => 'required|string|max:255|unique:categories,name,'.$category->id,
         ]);
 
         $category->update([

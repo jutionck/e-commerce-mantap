@@ -15,7 +15,7 @@ class CheckoutController extends Controller
     public function index()
     {
         $cart = session()->get('cart', []);
-        
+
         if (empty($cart)) {
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja kosong');
         }
@@ -57,13 +57,13 @@ class CheckoutController extends Controller
         ]);
 
         $cart = session()->get('cart', []);
-        
+
         if (empty($cart)) {
             return redirect()->route('cart.index')->with('error', 'Keranjang belanja kosong');
         }
 
         DB::beginTransaction();
-        
+
         try {
             // Calculate total
             $subtotal = 0;
@@ -71,17 +71,17 @@ class CheckoutController extends Controller
 
             foreach ($cart as $productId => $item) {
                 $product = Product::find($productId);
-                if (!$product) {
-                    throw new \Exception("Produk tidak ditemukan");
+                if (! $product) {
+                    throw new \Exception('Produk tidak ditemukan');
                 }
-                
+
                 if ($product->stock < $item['quantity']) {
                     throw new \Exception("Stok produk {$product->name} tidak mencukupi");
                 }
 
                 $itemTotal = $product->price * $item['quantity'];
                 $subtotal += $itemTotal;
-                
+
                 $orderItems[] = [
                     'product_id' => $productId,
                     'quantity' => $item['quantity'],
@@ -95,7 +95,7 @@ class CheckoutController extends Controller
             // Create order
             $order = Order::create([
                 'user_id' => auth()->id(),
-                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+                'order_number' => 'ORD-'.strtoupper(Str::random(8)),
                 'total_amount' => $totalAmount,
                 'status' => 'pending',
                 'shipping_address' => $request->shipping_address,
@@ -128,6 +128,7 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
     }

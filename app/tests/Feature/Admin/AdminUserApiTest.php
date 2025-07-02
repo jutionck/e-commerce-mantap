@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -17,7 +17,7 @@ class AdminUserApiTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->admin = User::factory()->create([
             'role' => 'admin',
             'email_verified_at' => now(),
@@ -31,7 +31,7 @@ class AdminUserApiTest extends TestCase
             'email' => 'newuser@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'role' => 'customer'
+            'role' => 'customer',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -57,7 +57,7 @@ class AdminUserApiTest extends TestCase
             'email' => 'newadmin@example.com',
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'role' => 'admin'
+            'role' => 'admin',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -88,7 +88,7 @@ class AdminUserApiTest extends TestCase
                 'email' => $existingUser->email,
                 'password' => 'password123',
                 'password_confirmation' => 'password123',
-                'role' => 'customer'
+                'role' => 'customer',
             ]);
 
         $response->assertSessionHasErrors(['email']);
@@ -101,7 +101,7 @@ class AdminUserApiTest extends TestCase
         $updateData = [
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
-            'role' => 'admin'
+            'role' => 'admin',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -126,7 +126,7 @@ class AdminUserApiTest extends TestCase
             'email' => $user->email,
             'role' => $user->role,
             'password' => 'newpassword123',
-            'password_confirmation' => 'newpassword123'
+            'password_confirmation' => 'newpassword123',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -148,7 +148,7 @@ class AdminUserApiTest extends TestCase
             'email' => $user->email,
             'role' => $user->role,
             'password' => '',
-            'password_confirmation' => ''
+            'password_confirmation' => '',
         ];
 
         $response = $this->actingAs($this->admin)
@@ -170,7 +170,7 @@ class AdminUserApiTest extends TestCase
             ->put(route('admin.users.update', $user1), [
                 'name' => $user1->name,
                 'email' => $user2->email,
-                'role' => $user1->role
+                'role' => $user1->role,
             ]);
 
         $response->assertSessionHasErrors(['email']);

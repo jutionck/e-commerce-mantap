@@ -17,6 +17,7 @@ class ProductController extends Controller
         $products->transform(function ($product) {
             $product->primary_image = $product->primaryImage();
             $product->all_images = $product->allImages();
+
             return $product;
         });
 
@@ -40,6 +41,7 @@ class ProductController extends Controller
         $relatedProducts->transform(function ($relatedProduct) {
             $relatedProduct->primary_image = $relatedProduct->primaryImage();
             $relatedProduct->all_images = $relatedProduct->allImages();
+
             return $relatedProduct;
         });
 
@@ -50,7 +52,7 @@ class ProductController extends Controller
 
         return Inertia::render('Product/Show', [
             'product' => $product,
-            'relatedProducts' => $relatedProducts
+            'relatedProducts' => $relatedProducts,
         ]);
     }
 }

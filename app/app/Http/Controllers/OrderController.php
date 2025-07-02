@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class OrderController extends Controller
@@ -16,7 +15,7 @@ class OrderController extends Controller
             ->get();
 
         return Inertia::render('Orders/Index', [
-            'orders' => $orders
+            'orders' => $orders,
         ]);
     }
 
@@ -30,7 +29,7 @@ class OrderController extends Controller
         $order->load(['orderItems.product', 'payment']);
 
         return Inertia::render('Orders/Show', [
-            'order' => $order
+            'order' => $order,
         ]);
     }
 }

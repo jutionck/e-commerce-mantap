@@ -13,7 +13,7 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         return Inertia::render('Cart/Index', [
-            'cart' => $cart
+            'cart' => $cart,
         ]);
     }
 
@@ -31,7 +31,7 @@ class CartController extends Controller
                 'name' => $product->name,
                 'quantity' => $quantity,
                 'price' => $product->price,
-                'image' => $product->image
+                'image' => $product->image,
             ];
         }
 

@@ -21,9 +21,9 @@ class UserController extends Controller
         // Search functionality
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                  ->orWhere('email', 'like', '%' . $search . '%');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
@@ -36,7 +36,7 @@ class UserController extends Controller
         if ($request->has('date_from') && $request->date_from) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
-        
+
         if ($request->has('date_to') && $request->date_to) {
             $query->whereDate('created_at', '<=', $request->date_to);
         }
@@ -45,13 +45,13 @@ class UserController extends Controller
 
         $roleOptions = [
             'customer' => 'Customer',
-            'admin' => 'Admin'
+            'admin' => 'Admin',
         ];
 
         return Inertia::render('Admin/Users/Index', [
             'users' => $users,
             'roleOptions' => $roleOptions,
-            'filters' => $request->only(['search', 'role', 'date_from', 'date_to'])
+            'filters' => $request->only(['search', 'role', 'date_from', 'date_to']),
         ]);
     }
 
@@ -100,9 +100,9 @@ class UserController extends Controller
     public function show(User $user)
     {
         $user->load(['orders.orderItems.product']);
-        
+
         return Inertia::render('Admin/Users/Show', [
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -112,7 +112,7 @@ class UserController extends Controller
     public function edit(User $user)
     {
         return Inertia::render('Admin/Users/Edit', [
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -189,10 +189,11 @@ class UserController extends Controller
         }
 
         $user->update([
-            'email_verified_at' => $user->email_verified_at ? null : now()
+            'email_verified_at' => $user->email_verified_at ? null : now(),
         ]);
 
         $status = $user->email_verified_at ? 'activated' : 'deactivated';
+
         return redirect()->back()
             ->with('success', "User {$status} successfully.");
     }

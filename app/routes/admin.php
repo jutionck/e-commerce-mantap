@@ -22,6 +22,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Product Management
     Route::resource('products', \App\Http\Controllers\Admin\ProductController::class);
 
+    // Product Image Management
+    Route::post('products/{product}/images', [\App\Http\Controllers\Admin\ProductImageController::class, 'store'])->name('products.images.store');
+    Route::delete('product-images/{image}', [\App\Http\Controllers\Admin\ProductImageController::class, 'destroy'])->name('products.images.destroy');
+    Route::patch('product-images/{image}/primary', [\App\Http\Controllers\Admin\ProductImageController::class, 'setPrimary'])->name('products.images.setPrimary');
+    Route::patch('products/{product}/images/reorder', [\App\Http\Controllers\Admin\ProductImageController::class, 'reorder'])->name('products.images.reorder');
+
     // Category Management
     Route::resource('categories', \App\Http\Controllers\Admin\CategoryController::class);
 

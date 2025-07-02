@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\User;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -13,7 +13,9 @@ class AdminProductTest extends TestCase
     use RefreshDatabase;
 
     private $admin;
+
     private $customer;
+
     private $category;
 
     protected function setUp(): void
@@ -22,23 +24,23 @@ class AdminProductTest extends TestCase
 
         $this->admin = User::factory()->create([
             'role' => 'admin',
-            'admin_verified_at' => now()
+            'admin_verified_at' => now(),
         ]);
 
         $this->customer = User::factory()->create([
-            'role' => 'customer'
+            'role' => 'customer',
         ]);
 
         $this->category = Category::create([
             'name' => 'Test Category',
-            'slug' => 'test-category'
+            'slug' => 'test-category',
         ]);
     }
 
     public function test_admin_can_view_products_index()
     {
         $product = Product::factory()->create([
-            'category_id' => $this->category->id
+            'category_id' => $this->category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -86,7 +88,7 @@ class AdminProductTest extends TestCase
             'category_id' => $this->category->id,
             'description' => 'A test product description',
             'price' => 99.99,
-            'stock' => 10
+            'stock' => 10,
         ];
 
         $response = $this->actingAs($this->admin)
@@ -100,14 +102,14 @@ class AdminProductTest extends TestCase
             'slug' => 'new-test-product',
             'category_id' => $this->category->id,
             'price' => 99.99,
-            'stock' => 10
+            'stock' => 10,
         ]);
     }
 
     public function test_admin_can_view_product_details()
     {
         $product = Product::factory()->create([
-            'category_id' => $this->category->id
+            'category_id' => $this->category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -123,7 +125,7 @@ class AdminProductTest extends TestCase
     public function test_admin_can_view_product_edit_form()
     {
         $product = Product::factory()->create([
-            'category_id' => $this->category->id
+            'category_id' => $this->category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -142,7 +144,7 @@ class AdminProductTest extends TestCase
         $product = Product::factory()->create([
             'category_id' => $this->category->id,
             'name' => 'Original Name',
-            'price' => 50.00
+            'price' => 50.00,
         ]);
 
         $updateData = [
@@ -150,7 +152,7 @@ class AdminProductTest extends TestCase
             'category_id' => $this->category->id,
             'description' => 'Updated description',
             'price' => 75.00,
-            'stock' => 20
+            'stock' => 20,
         ];
 
         $response = $this->actingAs($this->admin)
@@ -164,14 +166,14 @@ class AdminProductTest extends TestCase
             'name' => 'Updated Product Name',
             'slug' => 'updated-product-name',
             'price' => 75.00,
-            'stock' => 20
+            'stock' => 20,
         ]);
     }
 
     public function test_admin_can_delete_product()
     {
         $product = Product::factory()->create([
-            'category_id' => $this->category->id
+            'category_id' => $this->category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -181,7 +183,7 @@ class AdminProductTest extends TestCase
             ->assertSessionHas('success');
 
         $this->assertSoftDeleted('products', [
-            'id' => $product->id
+            'id' => $product->id,
         ]);
     }
 
@@ -190,13 +192,13 @@ class AdminProductTest extends TestCase
         $product1 = Product::factory()->create([
             'category_id' => $this->category->id,
             'name' => 'iPhone 15',
-            'description' => 'Latest smartphone'
+            'description' => 'Latest smartphone',
         ]);
 
         $product2 = Product::factory()->create([
             'category_id' => $this->category->id,
             'name' => 'Samsung Galaxy',
-            'description' => 'Android phone'
+            'description' => 'Android phone',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -216,12 +218,12 @@ class AdminProductTest extends TestCase
 
         $product1 = Product::factory()->create([
             'category_id' => $this->category->id,
-            'name' => 'Product in Category 1'
+            'name' => 'Product in Category 1',
         ]);
 
         $product2 = Product::factory()->create([
             'category_id' => $category2->id,
-            'name' => 'Product in Category 2'
+            'name' => 'Product in Category 2',
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -242,7 +244,7 @@ class AdminProductTest extends TestCase
                 'name' => '', // Required field empty
                 'category_id' => 'invalid', // Invalid category
                 'price' => -10, // Negative price
-                'stock' => -5 // Negative stock
+                'stock' => -5, // Negative stock
             ]);
 
         $response->assertSessionHasErrors(['name', 'category_id', 'price', 'stock']);
@@ -251,7 +253,7 @@ class AdminProductTest extends TestCase
     public function test_product_validation_on_update()
     {
         $product = Product::factory()->create([
-            'category_id' => $this->category->id
+            'category_id' => $this->category->id,
         ]);
 
         $response = $this->actingAs($this->admin)
@@ -259,7 +261,7 @@ class AdminProductTest extends TestCase
                 'name' => '', // Required field empty
                 'category_id' => 'invalid', // Invalid category
                 'price' => -10, // Negative price
-                'stock' => -5 // Negative stock
+                'stock' => -5, // Negative stock
             ]);
 
         $response->assertSessionHasErrors(['name', 'category_id', 'price', 'stock']);

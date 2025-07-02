@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Product;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -20,8 +20,8 @@ class ProductController extends Controller
 
         // Search functionality
         if ($request->has('search') && $request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('description', 'like', '%' . $request->search . '%');
+            $query->where('name', 'like', '%'.$request->search.'%')
+                ->orWhere('description', 'like', '%'.$request->search.'%');
         }
 
         // Category filter
@@ -35,7 +35,7 @@ class ProductController extends Controller
         return Inertia::render('Admin/Products/Index', [
             'products' => $products,
             'categories' => $categories,
-            'filters' => $request->only(['search', 'category'])
+            'filters' => $request->only(['search', 'category']),
         ]);
     }
 
@@ -45,9 +45,9 @@ class ProductController extends Controller
     public function create()
     {
         $categories = Category::all();
-        
+
         return Inertia::render('Admin/Products/Create', [
-            'categories' => $categories
+            'categories' => $categories,
         ]);
     }
 
@@ -85,9 +85,9 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         $product->load('category');
-        
+
         return Inertia::render('Admin/Products/Show', [
-            'product' => $product
+            'product' => $product,
         ]);
     }
 
@@ -97,10 +97,10 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $categories = Category::all();
-        
+
         return Inertia::render('Admin/Products/Edit', [
-            'product' => $product,
-            'categories' => $categories
+            'product' => $product->load('images'),
+            'categories' => $categories,
         ]);
     }
 

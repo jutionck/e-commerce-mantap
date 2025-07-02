@@ -16,18 +16,18 @@ class AdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Check if user is authenticated
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
         // Check if user is admin
-        if (!auth()->user()->isAdmin()) {
+        if (! auth()->user()->isAdmin()) {
             abort(403, 'Unauthorized. Admin access required.');
         }
 
         // Check if admin is verified (optional additional security)
         // Skip verification check in testing environment
-        if (!app()->environment('testing') && !auth()->user()->isVerifiedAdmin()) {
+        if (! app()->environment('testing') && ! auth()->user()->isVerifiedAdmin()) {
             abort(403, 'Admin account not verified. Contact system administrator.');
         }
 

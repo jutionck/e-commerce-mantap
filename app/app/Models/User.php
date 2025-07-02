@@ -66,6 +66,6 @@ class User extends Authenticatable
 
     public function isVerifiedAdmin(): bool
     {
-        return $this->isAdmin() && !is_null($this->admin_verified_at);
+        return $this->isAdmin() && ! is_null($this->admin_verified_at);
     }
 }
