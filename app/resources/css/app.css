@@ -1,3 +1,93 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom CSS for enhanced homepage */
+@layer utilities {
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@layer components {
+    /* Enhanced component styles */
+    .bg-primary {
+        @apply bg-blue-600;
+    }
+    
+    .text-primary-foreground {
+        @apply text-white;
+    }
+    
+    .bg-secondary {
+        @apply bg-gray-100;
+    }
+    
+    .text-secondary-foreground {
+        @apply text-gray-900;
+    }
+    
+    .bg-destructive {
+        @apply bg-red-600;
+    }
+    
+    .text-destructive-foreground {
+        @apply text-white;
+    }
+    
+    .border-input {
+        @apply border-gray-200;
+    }
+    
+    .bg-background {
+        @apply bg-white;
+    }
+    
+    .bg-card {
+        @apply bg-white;
+    }
+    
+    .text-card-foreground {
+        @apply text-gray-900;
+    }
+    
+    .bg-popover {
+        @apply bg-white;
+    }
+    
+    .text-popover-foreground {
+        @apply text-gray-900;
+    }
+    
+    .text-muted-foreground {
+        @apply text-gray-500;
+    }
+    
+    .bg-accent {
+        @apply bg-gray-100;
+    }
+    
+    .text-accent-foreground {
+        @apply text-gray-900;
+    }
+    
+    .ring-ring {
+        @apply ring-blue-500;
+    }
+    
+    .ring-offset-background {
+        @apply ring-offset-white;
+    }
+}
