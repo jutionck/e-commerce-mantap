@@ -48,3 +48,6 @@ vendor/
 # CLAUDE.md (internal file)
 .claude/
 CLAUDE.md
+
+# Template
+template/
