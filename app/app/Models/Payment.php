@@ -13,10 +13,19 @@ class Payment extends Model
         'payment_method',
         'amount',
         'status',
+        'snap_token',
+        'transaction_type',
+        'payment_type',
+        'va_number',
+        'gross_amount',
+        'fraud_status',
+        'settlement_time',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'gross_amount' => 'decimal:2',
+        'settlement_time' => 'datetime',
     ];
 
     public function order(): BelongsTo

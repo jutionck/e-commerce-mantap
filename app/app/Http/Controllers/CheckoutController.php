@@ -97,7 +97,7 @@ class CheckoutController extends Controller
                 'user_id' => auth()->id(),
                 'order_number' => 'ORD-'.strtoupper(Str::random(8)),
                 'total_amount' => $totalAmount,
-                'status' => 'pending',
+                'status' => 'pending_payment',
                 'shipping_address' => $request->shipping_address,
                 'shipping_method' => $request->shipping_method,
                 'shipping_cost' => $request->shipping_cost,
@@ -123,8 +123,9 @@ class CheckoutController extends Controller
 
             DB::commit();
 
-            return redirect()->route('orders.show', $order)
-                ->with('success', 'Pesanan berhasil dibuat');
+            // Redirect to payment page
+            return redirect()->route('payments.index', $order)
+                ->with('success', 'Pesanan berhasil dibuat. Silakan lakukan pembayaran.');
 
         } catch (\Exception $e) {
             DB::rollback();
