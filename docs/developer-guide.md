@@ -267,6 +267,22 @@ GET  /orders/{order}            # Order detail
 GET  /profile                   # Profile edit
 PATCH /profile                  # Update profile
 DELETE /profile                 # Delete account
+
+# Payment Routes
+GET  /payments/{order}          # Show payment page
+POST /payments/{payment}/cancel # Cancel a payment
+GET  /payments/{order}/check-status # Check payment status (AJAX)
+```
+
+### Public Payment Routes
+```php
+# Midtrans Webhook
+POST /payments/notification     # Handle payment notifications
+
+# Midtrans Redirects
+GET  /payments/success          # Success redirect
+GET  /payments/pending          # Pending redirect
+GET  /payments/failed           # Failed redirect
 ```
 
 ### Auth Routes (via Laravel Breeze)

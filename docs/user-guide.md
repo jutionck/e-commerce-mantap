@@ -147,15 +147,30 @@ Setiap produk menampilkan:
 
 5. **Buat Pesanan**:
    - Klik "Buat Pesanan"
-   - Sistem akan memproses pesanan
-   - Stok produk otomatis berkurang
-   - Keranjang dikosongkan
+   - Sistem akan memproses pesanan dan mengarahkan Anda ke halaman pembayaran.
 
-### Validasi Checkout
-- Semua field alamat harus diisi
-- Metode pengiriman harus dipilih
-- Stok produk harus mencukupi
-- User harus login
+### Proses Pembayaran
+Setelah membuat pesanan, Anda akan diarahkan ke halaman pembayaran yang aman.
+
+1. **Halaman Pembayaran**:
+   - Halaman ini akan menampilkan ringkasan pesanan Anda.
+   - Klik tombol **"Pay Now"** untuk memulai proses pembayaran melalui Midtrans.
+
+2. **Pilih Metode Pembayaran**:
+   - Sebuah popup aman dari Midtrans akan muncul.
+   - Anda dapat memilih berbagai metode pembayaran, seperti:
+     - Kartu Kredit/Debit
+     - Transfer Bank (Virtual Account)
+     - E-Wallet (GoPay, ShopeePay, dll.)
+     - QRIS
+
+3. **Selesaikan Pembayaran**:
+   - Ikuti instruksi yang diberikan untuk metode pembayaran yang Anda pilih.
+   - Setelah pembayaran berhasil, Anda akan diarahkan kembali ke halaman sukses di situs kami.
+
+4. **Konfirmasi Otomatis**:
+   - Status pesanan dan pembayaran Anda akan diperbarui secara otomatis.
+   - Anda dapat melihat status terbaru di halaman "Pesanan Saya".
 
 ## Mengelola Pesanan
 
