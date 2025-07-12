@@ -26,12 +26,12 @@ Aplikasi e-commerce modern yang dibangun dengan Laravel sebagai backend dan Reac
 - 🛒 **Shopping Cart** - Add, update, remove items
 - 💳 **Checkout Process** - Form alamat dan pengiriman
 - 📦 **Order Management** - History dan detail pesanan
+- 💰 **Payment Gateway** - Integrasi Midtrans Snap
 - 👤 **User Profile** - Kelola akun dan informasi pribadi
 - 🏢 **Admin Panel** - Dashboard admin dengan role-based access
 - 📱 **Responsive Design** - Mobile-friendly interface
 
 ### 🔄 **Dalam Pengembangan**
-- 💰 **Payment Gateway** - Integrasi Midtrans Snap
 - 📋 **Admin CRUD** - Product & order management
 - 🚚 **Shipping API** - Integrasi JNE, JNT, dll
 - 📧 **Email Notifications** - Konfirmasi pesanan
@@ -141,7 +141,7 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 
 ## 📈 Status Progress
 
-**Overall Completion: 75%** 🎯
+**Overall Completion: 85%** 🎯
 
 | Modul | Status | Progress |
 |-------|--------|----------|
@@ -150,9 +150,9 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 | 🛒 Shopping Cart | ✅ Complete | 100% |
 | 📦 Order Management | ✅ Complete | 100% |
 | 🏢 Admin Panel | ✅ Complete | 100% |
+| 💰 Payment Gateway | ✅ Complete | 100% |
 | 💳 Checkout Process | ⚠️ Partial | 80% |
 | 🚚 Shipping Integration | ⚠️ Mock | 30% |
-| 💰 Payment Gateway | ❌ Not Started | 0% |
 | 📋 Admin CRUD | 🔄 In Progress | 20% |
 | 📧 Email Notifications | ❌ Not Started | 0% |
 
@@ -323,7 +323,6 @@ Kami sangat welcome untuk kontribusi! Berikut cara berkontribusi:
 ## 🐛 Known Issues
 
 - ⚠️ Shipping cost calculation masih menggunakan mock data
-- ⚠️ Payment status di order detail masih hardcoded
 - ⚠️ Belum ada email notifications
 
 > 🔍 **List lengkap known issues di [Features Status](docs/features-status.md)**
