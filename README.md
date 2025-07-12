@@ -6,7 +6,7 @@
 [![Laravel](https://img.shields.io/badge/Laravel-12-red.svg)](https://laravel.com/)
 [![React](https://img.shields.io/badge/React-18-blue.svg)](https://reactjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-blue.svg)](https://tailwindcss.com/)
-[![Progress](https://img.shields.io/badge/Progress-65%25-yellow.svg)](#status-progress)
+[![Progress](https://img.shields.io/badge/Progress-85%25-brightgreen.svg)](#status-progress)
 
 Aplikasi e-commerce modern yang dibangun dengan Laravel sebagai backend dan React + Inertia.js sebagai frontend. Dilengkapi dengan sistem manajemen produk, keranjang belanja, checkout, dan order management yang lengkap.
 
@@ -24,17 +24,24 @@ Aplikasi e-commerce modern yang dibangun dengan Laravel sebagai backend dan Reac
 - 🔐 **Authentication System** - Register, login, reset password
 - 🛍️ **Product Catalog** - Browse produk dengan kategori
 - 🛒 **Shopping Cart** - Add, update, remove items
-- 💳 **Checkout Process** - Form alamat dan pengiriman
-- 📦 **Order Management** - History dan detail pesanan
-- 💰 **Payment Gateway** - Integrasi Midtrans Snap
+- 💳 **Checkout Process** - Form alamat dan pengiriman lengkap
+- 📦 **Order Management** - History dan detail pesanan dengan tracking
+- 💰 **Payment Gateway** - Integrasi Midtrans Snap dengan multiple payment methods
 - 👤 **User Profile** - Kelola akun dan informasi pribadi
 - 🏢 **Admin Panel** - Dashboard admin dengan role-based access
 - 📱 **Responsive Design** - Mobile-friendly interface
 
 ### 🔄 **Dalam Pengembangan**
-- 📋 **Admin CRUD** - Product & order management
-- 🚚 **Shipping API** - Integrasi JNE, JNT, dll
-- 📧 **Email Notifications** - Konfirmasi pesanan
+- 📋 **Admin CRUD** - Product & order management (advanced features)
+- 🚚 **Shipping API** - Integrasi real-time JNE, JNT, dll
+- 📧 **Email Notifications** - Konfirmasi pesanan dan status update
+
+### 💰 **Payment Features (Baru!)**
+- 🔥 **Multiple Payment Methods** - QRIS, GoPay, DANA, ShopeePay, LinkAja, OVO, Credit Card, Bank Transfer
+- 📱 **Midtrans Snap Integration** - Seamless payment experience
+- 🔄 **Real-time Status Sync** - Manual payment status checking
+- 🏦 **Bank Detection** - Otomatis detect bank (BCA VA, BNI VA, dll)
+- 📊 **Payment Tracking** - Detail transaction history dengan settlement time
 
 ### 📋 **Roadmap**
 - 🖼️ **Product Images** - Upload dan gallery
@@ -68,6 +75,12 @@ php artisan key:generate
 php artisan migrate
 php artisan db:seed
 php artisan db:seed --class=AdminUserSeeder
+
+# Setup Midtrans (optional - for payment testing)
+# Add your Midtrans keys to .env:
+# MIDTRANS_MERCHANT_ID=your_merchant_id
+# MIDTRANS_CLIENT_KEY=your_client_key  
+# MIDTRANS_SERVER_KEY=your_server_key
 
 # Build assets dan start server
 npm run build
@@ -125,6 +138,7 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 - **PHP 8.2** - Modern PHP dengan performance optimization
 - **SQLite/MySQL** - Database untuk development dan production
 - **Eloquent ORM** - Database relationships dan query builder
+- **Midtrans Snap** - Payment gateway integration untuk multiple payment methods
 
 ### Frontend
 - **React 18** - Modern frontend library
@@ -150,8 +164,8 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 | 🛒 Shopping Cart | ✅ Complete | 100% |
 | 📦 Order Management | ✅ Complete | 100% |
 | 🏢 Admin Panel | ✅ Complete | 100% |
-| 💰 Payment Gateway | ✅ Complete | 100% |
-| 💳 Checkout Process | ⚠️ Partial | 80% |
+| 💰 Payment Gateway | ✅ Complete | 95% |
+| 💳 Checkout Process | ✅ Complete | 95% |
 | 🚚 Shipping Integration | ⚠️ Mock | 30% |
 | 📋 Admin CRUD | 🔄 In Progress | 20% |
 | 📧 Email Notifications | ❌ Not Started | 0% |
@@ -161,11 +175,12 @@ Kami menyediakan dokumentasi komprehensif di folder [`docs/`](docs/) untuk berba
 ## 🎯 Demo & Testing
 
 ### User Demo Flow
-1. **Homepage** - Browse katalog produk
+1. **Homepage** - Browse katalog produk dengan carousel dan flash sale
 2. **Product Detail** - Lihat detail dan add to cart
-3. **Shopping Cart** - Kelola items di keranjang
-4. **Checkout** - Isi alamat pengiriman
-5. **Order History** - Lihat pesanan di "Pesanan Saya"
+3. **Shopping Cart** - Kelola items di keranjang dengan dropdown preview
+4. **Checkout** - Isi alamat pengiriman dan pilih metode
+5. **Payment** - Bayar menggunakan Midtrans (QRIS, GoPay, Bank Transfer, dll)
+6. **Order History** - Lihat pesanan di "Pesanan Saya" dengan status real-time
 
 ### Test Accounts
 Setelah menjalankan AdminUserSeeder:
@@ -304,10 +319,12 @@ Kami sangat welcome untuk kontribusi! Berikut cara berkontribusi:
 - ✅ Order management
 - ✅ Admin panel with role-based access
 
-### Phase 2: Payment & CRUD 🔄 (In Progress)
-- 🔄 Payment gateway (Midtrans)
-- 🔄 Admin product/order CRUD
-- 🔄 Real shipping API integration
+### Phase 2: Payment & CRUD ✅ (95% Complete)
+- ✅ Payment gateway (Midtrans Snap) - Multiple payment methods
+- ✅ Payment status synchronization - Real-time status updates
+- ✅ Enhanced checkout flow - Complete address and shipping
+- 🔄 Admin product/order CRUD - Advanced features
+- 🔄 Real shipping API integration - JNE, JNT integration
 
 ### Phase 3: User Experience 📅 (Planned)
 - 📅 Email notifications
@@ -322,8 +339,9 @@ Kami sangat welcome untuk kontribusi! Berikut cara berkontribusi:
 
 ## 🐛 Known Issues
 
-- ⚠️ Shipping cost calculation masih menggunakan mock data
-- ⚠️ Belum ada email notifications
+- ⚠️ Shipping cost calculation masih menggunakan mock data (JNE/JNT API integration pending)
+- ⚠️ Email notifications belum diimplementasi
+- ⚠️ Webhook Midtrans untuk production deployment belum dikonfigurasi (manual status sync tersedia)
 
 > 🔍 **List lengkap known issues di [Features Status](docs/features-status.md)**
 
