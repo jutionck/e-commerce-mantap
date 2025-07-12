@@ -24,6 +24,9 @@ export default function PaymentPending({ order }) {
             
             if (data.status === 'success' && data.order_status === 'paid') {
                 window.location.href = `/payments/success?order_id=${order.order_number}`;
+            } else if (data.status === 'error') {
+                console.log('Payment not found yet, will check again later');
+                setTimeout(() => setIsChecking(false), 1000);
             } else {
                 setTimeout(() => setIsChecking(false), 1000);
             }
@@ -63,15 +66,20 @@ export default function PaymentPending({ order }) {
         return () => clearInterval(timer);
     }, [order.created_at]);
 
-    // Auto-check payment status every 30 seconds
+    // Auto-check payment status every 2 minutes (further reduced to minimize API calls)
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (!isChecking) {
-                checkPaymentStatus();
-            }
-        }, 30000);
+        // Only start auto-check after 1 minute delay to allow user to complete payment
+        const initialDelay = setTimeout(() => {
+            const interval = setInterval(() => {
+                if (!isChecking) {
+                    checkPaymentStatus();
+                }
+            }, 120000); // Changed to 2 minutes
 
-        return () => clearInterval(interval);
+            return () => clearInterval(interval);
+        }, 60000); // 1 minute initial delay
+
+        return () => clearTimeout(initialDelay);
     }, [isChecking]);
 
     return (

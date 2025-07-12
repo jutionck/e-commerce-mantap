@@ -87,12 +87,22 @@ export default function OrdersIndex({ orders }) {
                                                         Total: {formatPrice(order.total_amount)}
                                                     </p>
                                                 </div>
-                                                <Link
-                                                    href={`/orders/${order.id}`}
-                                                    className="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
-                                                >
-                                                    Lihat Detail
-                                                </Link>
+                                                <div className="space-x-2">
+                                                    {order.status === 'pending_payment' && (
+                                                        <Link
+                                                            href={`/payments/${order.id}`}
+                                                            className="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                                        >
+                                                            Bayar Sekarang
+                                                        </Link>
+                                                    )}
+                                                    <Link
+                                                        href={`/orders/${order.id}`}
+                                                        className="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150"
+                                                    >
+                                                        Lihat Detail
+                                                    </Link>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}

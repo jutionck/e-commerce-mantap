@@ -15,7 +15,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'order_number',
-        'total',
+        'total_amount',
         'status',
         'shipping_address',
         'shipping_method',
@@ -26,7 +26,7 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'total' => 'decimal:2',
+        'total_amount' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
         'shipping_address' => 'array',
     ];

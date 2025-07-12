@@ -8,6 +8,7 @@ use App\Services\MidtransService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
@@ -23,10 +24,10 @@ class PaymentController extends Controller
      */
     public function index(Order $order)
     {
-        // Ensure user owns this order
-        if ($order->user_id !== auth()->id()) {
+        if (!Auth::check() || $order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access to payment');
         }
+
 
         // Check if order is in correct status
         if (!in_array($order->status, ['pending', 'pending_payment'])) {
@@ -67,7 +68,6 @@ class PaymentController extends Controller
                 'paymentData' => $paymentData,
                 'snapUrl' => config('midtrans.urls.' . config('midtrans.environment') . '.snap'),
             ]);
-
         } catch (\Exception $e) {
             Log::error('Payment page error', [
                 'order_id' => $order->id,
@@ -86,7 +86,7 @@ class PaymentController extends Controller
     {
         try {
             $notification = $request->all();
-            
+
             Log::info('Received payment notification', $notification);
 
             $result = $this->midtransService->handleNotification($notification);
@@ -96,7 +96,6 @@ class PaymentController extends Controller
             } else {
                 return response()->json(['status' => 'error'], 400);
             }
-
         } catch (\Exception $e) {
             Log::error('Payment notification error', [
                 'error' => $e->getMessage(),
@@ -113,7 +112,7 @@ class PaymentController extends Controller
     public function success(Request $request)
     {
         $orderId = $request->get('order_id');
-        
+
         if (!$orderId) {
             return redirect()->route('orders.index')
                 ->with('error', 'Payment order not found');
@@ -122,16 +121,16 @@ class PaymentController extends Controller
         try {
             // Verify payment status from Midtrans
             $paymentStatus = $this->midtransService->verifyPayment($orderId);
-            
+
             $order = Order::where('order_number', $orderId)->first();
-            
+
             if (!$order) {
                 return redirect()->route('orders.index')
                     ->with('error', 'Order not found');
             }
 
             // Ensure user owns this order
-            if ($order->user_id !== auth()->id()) {
+            if ($order->user_id !== Auth::id()) {
                 abort(403, 'Unauthorized access to order');
             }
 
@@ -139,7 +138,6 @@ class PaymentController extends Controller
                 'order' => $order->load('orderItems.product'),
                 'paymentStatus' => $paymentStatus,
             ]);
-
         } catch (\Exception $e) {
             Log::error('Payment success page error', [
                 'order_id' => $orderId,
@@ -157,21 +155,21 @@ class PaymentController extends Controller
     public function pending(Request $request)
     {
         $orderId = $request->get('order_id');
-        
+
         if (!$orderId) {
             return redirect()->route('orders.index')
                 ->with('warning', 'Payment is pending');
         }
 
         $order = Order::where('order_number', $orderId)->first();
-        
+
         if (!$order) {
             return redirect()->route('orders.index')
                 ->with('error', 'Order not found');
         }
 
         // Ensure user owns this order
-        if ($order->user_id !== auth()->id()) {
+        if ($order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access to order');
         }
 
@@ -186,21 +184,21 @@ class PaymentController extends Controller
     public function failed(Request $request)
     {
         $orderId = $request->get('order_id');
-        
+
         if (!$orderId) {
             return redirect()->route('orders.index')
                 ->with('error', 'Payment failed');
         }
 
         $order = Order::where('order_number', $orderId)->first();
-        
+
         if (!$order) {
             return redirect()->route('orders.index')
                 ->with('error', 'Order not found');
         }
 
         // Ensure user owns this order
-        if ($order->user_id !== auth()->id()) {
+        if ($order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access to order');
         }
 
@@ -217,8 +215,8 @@ class PaymentController extends Controller
         $order = $payment->order;
 
         // Ensure user owns this order
-        if ($order->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized access to payment');
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to order');
         }
 
         try {
@@ -236,7 +234,6 @@ class PaymentController extends Controller
                 return redirect()->route('orders.show', $order)
                     ->with('error', 'Failed to cancel payment');
             }
-
         } catch (\Exception $e) {
             Log::error('Payment cancellation error', [
                 'payment_id' => $payment->id,
@@ -255,24 +252,120 @@ class PaymentController extends Controller
     public function checkStatus(Order $order)
     {
         // Ensure user owns this order
-        if ($order->user_id !== auth()->id()) {
+        if ($order->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         try {
             $paymentStatus = $this->midtransService->verifyPayment($order->order_number);
-            
+
+            // Convert to array if it's an object
+            $paymentData = is_object($paymentStatus) ? json_decode(json_encode($paymentStatus), true) : $paymentStatus;
+
+            // Auto-update order status based on payment status
+            if (isset($paymentData['transaction_status'])) {
+                $transactionStatus = $paymentData['transaction_status'];
+
+                if ($transactionStatus === 'settlement' || $transactionStatus === 'capture') {
+                    // Payment successful - update order and payment status
+                    $order->update(['status' => 'paid']);
+
+                    $payment = $order->payment;
+                    if ($payment) {
+                        // Extract bank info from VA numbers or payment type
+                        $bankInfo = '';
+
+                        if (isset($paymentData['va_numbers']) && !empty($paymentData['va_numbers'])) {
+                            $vaNumber = $paymentData['va_numbers'][0];
+                            $vaNumber = is_object($vaNumber) ? json_decode(json_encode($vaNumber), true) : $vaNumber;
+                            $bankInfo = strtoupper($vaNumber['bank']) . ' Virtual Account';
+                        } elseif (isset($paymentData['payment_type'])) {
+                            $paymentType = $paymentData['payment_type'];
+                            switch ($paymentType) {
+                                case 'bank_transfer':
+                                    $bankInfo = 'Bank Transfer';
+                                    break;
+                                case 'echannel':
+                                    $bankInfo = 'Mandiri Bill Payment';
+                                    break;
+                                case 'gopay':
+                                    $bankInfo = 'GoPay';
+                                    break;
+                                case 'qris':
+                                    $bankInfo = 'QRIS';
+                                    break;
+                                case 'shopeepay':
+                                    $bankInfo = 'ShopeePay';
+                                    break;
+                                case 'dana':
+                                    $bankInfo = 'DANA';
+                                    break;
+                                case 'linkaja':
+                                    $bankInfo = 'LinkAja';
+                                    break;
+                                case 'ovo':
+                                    $bankInfo = 'OVO';
+                                    break;
+                                case 'credit_card':
+                                    $bankInfo = 'Credit Card';
+                                    break;
+                                case 'cstore':
+                                    $bankInfo = 'Convenience Store';
+                                    break;
+                                case 'akulaku':
+                                    $bankInfo = 'Akulaku';
+                                    break;
+                                default:
+                                    $bankInfo = ucwords(str_replace('_', ' ', $paymentType));
+                            }
+                        }
+
+                        $payment->update([
+                            'status' => 'paid',
+                            'transaction_id' => $paymentData['transaction_id'] ?? null,
+                            'payment_type' => $paymentData['payment_type'] ?? null,
+                            'payment_method' => $bankInfo ?: 'Midtrans Snap',
+                            'settlement_time' => isset($paymentData['settlement_time']) ?
+                                date('Y-m-d H:i:s', strtotime($paymentData['settlement_time'])) : now(),
+                        ]);
+                    }
+                } elseif ($transactionStatus === 'pending') {
+                    // Payment pending
+                    $order->update(['status' => 'pending_payment']);
+
+                    $payment = $order->payment;
+                    if ($payment) {
+                        $payment->update(['status' => 'pending']);
+                    }
+                } elseif (in_array($transactionStatus, ['deny', 'cancel', 'expire', 'failure'])) {
+                    // Payment failed
+                    $order->update(['status' => 'cancelled']);
+
+                    $payment = $order->payment;
+                    if ($payment) {
+                        $payment->update(['status' => 'failed']);
+                    }
+                }
+            }
+
             return response()->json([
                 'status' => 'success',
                 'payment_status' => $paymentStatus,
                 'order_status' => $order->fresh()->status,
             ]);
-
         } catch (\Exception $e) {
+            // Don't log 404 errors as they are expected for new transactions
+            if (!str_contains($e->getMessage(), 'Transaction doesn\'t exist')) {
+                Log::error('Failed to verify payment status', [
+                    'order_id' => $order->order_number,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+
             return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ], 500);
+                'status' => 'pending',
+                'message' => 'Payment not yet processed',
+            ], 200);
         }
     }
 }

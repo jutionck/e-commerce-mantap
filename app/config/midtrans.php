@@ -25,8 +25,8 @@ return [
 
     'urls' => [
         'sandbox' => [
-            'snap' => 'https://app.stg.midtrans.com/snap/snap.js',
-            'api' => 'https://api.stg.midtrans.com/v2',
+            'snap' => 'https://app.sandbox.midtrans.com/snap/snap.js',
+            'api' => 'https://api.sandbox.midtrans.com/v2',
         ],
         'production' => [
             'snap' => 'https://app.midtrans.com/snap/snap.js',
@@ -43,15 +43,20 @@ return [
     'payment_timeout' => 24, // hours
     'enabled_payments' => [
         'credit_card',
+        'gopay',
+        'qris', 
+        'shopeepay',
         'bca_va',
         'bni_va',
         'bri_va',
         'echannel',
         'permata_va',
         'other_va',
-        'gopay',
-        'shopeepay',
-        'qris',
+        'cstore',
+        'dana',
+        'linkaja',
+        'ovo',
+        'akulaku',
     ],
 
     /*

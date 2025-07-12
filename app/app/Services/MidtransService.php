@@ -86,8 +86,19 @@ class MidtransService
                     'unit' => 'hour',
                     'duration' => config('midtrans.payment_timeout', 24),
                 ],
+                'callbacks' => [
+                    'finish' => route('payments.success'),
+                    'unfinish' => route('payments.pending'),
+                    'error' => route('payments.failed'),
+                ],
             ];
 
+            // Log the transaction params for debugging
+            Log::info('Creating Snap token with params', [
+                'enabled_payments' => $transactionParams['enabled_payments'],
+                'order_id' => $order->order_number,
+            ]);
+            
             // Create Snap token
             $snapToken = Snap::getSnapToken($transactionParams);
 

@@ -20,13 +20,21 @@ export default function Index({ cartItems, totalAmount }) {
     });
 
     async function getShippingOptions() {
+        if (!data.shipping_address.city.trim()) {
+            alert('Mohon isi kota terlebih dahulu');
+            return;
+        }
+        
         try {
-            const response = await axios.post(route('shipping.cost'), {
+            console.log('Fetching shipping options for:', data.shipping_address.city);
+            const response = await axios.post('/shipping-cost', {
                 destination: data.shipping_address.city,
             });
+            console.log('Shipping options received:', response.data);
             setShippingOptions(response.data);
         } catch (error) {
             console.error('Error fetching shipping options:', error);
+            alert('Gagal mengambil opsi pengiriman. Coba lagi.');
         }
     }
 
@@ -41,7 +49,16 @@ export default function Index({ cartItems, totalAmount }) {
 
     function submit(e) {
         e.preventDefault();
-        post(route('checkout.store'));
+        console.log('Form submit triggered');
+        console.log('Form data:', data);
+        console.log('Selected shipping:', selectedShipping);
+        
+        post(route('checkout.store'), {
+            onStart: () => console.log('Request started'),
+            onSuccess: (response) => console.log('Success:', response),
+            onError: (errors) => console.log('Errors:', errors),
+            onFinish: () => console.log('Request finished')
+        });
     }
 
     const formatPrice = (price) => {
@@ -72,6 +89,14 @@ export default function Index({ cartItems, totalAmount }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
                                     <h2 className="text-2xl font-semibold mb-4">Alamat Pengiriman</h2>
+                                    
+                                    {/* Debug info */}
+                                    <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
+                                        <p><strong>Cart Items:</strong> {cartItems.length} items</p>
+                                        <p><strong>Total:</strong> {formatPrice(totalAmount)}</p>
+                                        <p><strong>Shipping Options:</strong> {shippingOptions.length} options</p>
+                                        <p><strong>Selected Shipping:</strong> {selectedShipping ? selectedShipping.name : 'None'}</p>
+                                    </div>
                                     <form onSubmit={submit}>
                                         <div className="mb-4">
                                             <label htmlFor="name" className="block mb-1 font-medium">Nama Penerima</label>
@@ -143,6 +168,16 @@ export default function Index({ cartItems, totalAmount }) {
                                         >
                                             Cek Ongkos Kirim
                                         </button>
+                                        
+                                        {selectedShipping && (
+                                            <button 
+                                                type="submit" 
+                                                className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg w-full hover:bg-green-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed" 
+                                                disabled={!selectedShipping || processing}
+                                            >
+                                                {processing ? 'Memproses...' : 'Buat Pesanan'}
+                                            </button>
+                                        )}
                                     </form>
 
                                     {shippingOptions.length > 0 && (
@@ -208,14 +243,11 @@ export default function Index({ cartItems, totalAmount }) {
                                             <p>{formatPrice(total)}</p>
                                         </div>
                                         
-                                        <button 
-                                            type="submit" 
-                                            onClick={submit}
-                                            className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg w-full hover:bg-green-700 transition font-semibold disabled:bg-gray-400 disabled:cursor-not-allowed" 
-                                            disabled={!selectedShipping || processing}
-                                        >
-                                            {processing ? 'Memproses...' : 'Buat Pesanan'}
-                                        </button>
+                                        {!selectedShipping && (
+                                            <div className="mt-6 text-center text-gray-500 text-sm">
+                                                Pilih metode pengiriman untuk melanjutkan
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

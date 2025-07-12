@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -24,7 +25,15 @@ class CheckoutController extends Controller
         $totalAmount = 0;
 
         foreach ($cart as $productId => $item) {
-            $product = Product::find($productId);
+            // Handle different cart formats
+            if (is_numeric($productId) && isset($item['name'])) {
+                // Cart from array format, find by name
+                $product = Product::where('name', $item['name'])->first();
+            } else {
+                // Normal format with product ID as key
+                $product = Product::find($productId);
+            }
+
             if ($product) {
                 $subtotal = $product->price * $item['quantity'];
                 $cartItems[] = [
@@ -69,10 +78,23 @@ class CheckoutController extends Controller
             $subtotal = 0;
             $orderItems = [];
 
+            // Handle different cart formats
             foreach ($cart as $productId => $item) {
-                $product = Product::find($productId);
-                if (! $product) {
-                    throw new \Exception('Produk tidak ditemukan');
+                // If cart is in numeric array format (from CartController), extract product ID
+                if (is_numeric($productId) && isset($item['name'])) {
+                    // Find product by name (fallback method)
+                    $product = Product::where('name', $item['name'])->first();
+                    if (!$product) {
+                        throw new \Exception('Produk tidak ditemukan: ' . $item['name']);
+                    }
+                    $actualProductId = $product->id;
+                } else {
+                    // Normal format with product ID as key
+                    $product = Product::find($productId);
+                    if (!$product) {
+                        throw new \Exception('Produk tidak ditemukan');
+                    }
+                    $actualProductId = $productId;
                 }
 
                 if ($product->stock < $item['quantity']) {
@@ -83,7 +105,7 @@ class CheckoutController extends Controller
                 $subtotal += $itemTotal;
 
                 $orderItems[] = [
-                    'product_id' => $productId,
+                    'product_id' => $actualProductId,
                     'quantity' => $item['quantity'],
                     'price' => $product->price,
                     'total' => $itemTotal,
@@ -92,16 +114,24 @@ class CheckoutController extends Controller
 
             $totalAmount = $subtotal + $request->shipping_cost;
 
+            if (!Auth::check()) {
+                return redirect()->route('login')->with('error', 'Please login to continue checkout.');
+            }
+
             // Create order
             $order = Order::create([
-                'user_id' => auth()->id(),
-                'order_number' => 'ORD-'.strtoupper(Str::random(8)),
+                'user_id' => Auth::id(),
+                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
                 'total_amount' => $totalAmount,
                 'status' => 'pending_payment',
                 'shipping_address' => $request->shipping_address,
                 'shipping_method' => $request->shipping_method,
                 'shipping_cost' => $request->shipping_cost,
             ]);
+
+            if (!$order || !$order->id) {
+                throw new \Exception('Order creation failed - no ID returned');
+            }
 
             // Create order items
             foreach ($orderItems as $item) {
@@ -126,10 +156,8 @@ class CheckoutController extends Controller
             // Redirect to payment page
             return redirect()->route('payments.index', $order)
                 ->with('success', 'Pesanan berhasil dibuat. Silakan lakukan pembayaran.');
-
         } catch (\Exception $e) {
             DB::rollback();
-
             return back()->with('error', $e->getMessage());
         }
     }
