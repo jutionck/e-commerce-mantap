@@ -44,7 +44,7 @@ return [
     'enabled_payments' => [
         'credit_card',
         'gopay',
-        'qris', 
+        'qris',
         'shopeepay',
         'bca_va',
         'bni_va',

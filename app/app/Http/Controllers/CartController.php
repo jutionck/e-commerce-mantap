@@ -37,7 +37,7 @@ class CartController extends Controller
 
         session()->put('cart', $cart);
 
-        return redirect()->route('cart.index');
+        return back();
     }
 
     public function update(Request $request, $productId)
@@ -49,7 +49,7 @@ class CartController extends Controller
             session()->put('cart', $cart);
         }
 
-        return redirect()->route('cart.index');
+        return back();
     }
 
     public function destroy($productId)
@@ -61,6 +61,6 @@ class CartController extends Controller
             session()->put('cart', $cart);
         }
 
-        return redirect()->route('cart.index');
+        return back();
     }
 }

@@ -25,13 +25,13 @@ export default function PaymentPending({ order }) {
             if (data.status === 'success' && data.order_status === 'paid') {
                 window.location.href = `/payments/success?order_id=${order.order_number}`;
             } else if (data.status === 'error') {
-                console.log('Payment not found yet, will check again later');
+                // Payment not found yet, will check again later
                 setTimeout(() => setIsChecking(false), 1000);
             } else {
                 setTimeout(() => setIsChecking(false), 1000);
             }
         } catch (error) {
-            console.error('Error checking payment status:', error);
+            // Silent error handling for background status checks
             setIsChecking(false);
         }
     };

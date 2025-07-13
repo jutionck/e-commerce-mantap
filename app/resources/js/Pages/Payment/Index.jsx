@@ -35,24 +35,19 @@ export default function PaymentIndex({ order, paymentData, snapUrl }) {
     const initializePayment = () => {
         window.snap.pay(paymentData.snap_token, {
             onSuccess: function(result) {
-                console.log('Payment success:', result);
                 setPaymentStatus('success');
-                // Redirect handled by Midtrans
                 window.location.href = `/payments/success?order_id=${order.order_number}`;
             },
             onPending: function(result) {
-                console.log('Payment pending:', result);
                 setPaymentStatus('pending');
                 window.location.href = `/payments/pending?order_id=${order.order_number}`;
             },
             onError: function(result) {
-                console.log('Payment error:', result);
                 setPaymentStatus('error');
                 setIsLoading(false);
-                alert('Payment failed. Please try again.');
+                alert('Pembayaran gagal. Silakan coba lagi.');
             },
             onClose: function() {
-                console.log('Payment popup closed');
                 setIsLoading(false);
             }
         });
@@ -71,7 +66,7 @@ export default function PaymentIndex({ order, paymentData, snapUrl }) {
                 }
             }
         } catch (error) {
-            console.error('Error checking payment status:', error);
+            // Silent error handling for background status checks
         }
     };
 

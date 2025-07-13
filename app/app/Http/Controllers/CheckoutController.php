@@ -6,9 +6,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class CheckoutController extends Controller
@@ -84,14 +84,14 @@ class CheckoutController extends Controller
                 if (is_numeric($productId) && isset($item['name'])) {
                     // Find product by name (fallback method)
                     $product = Product::where('name', $item['name'])->first();
-                    if (!$product) {
-                        throw new \Exception('Produk tidak ditemukan: ' . $item['name']);
+                    if (! $product) {
+                        throw new \Exception('Produk tidak ditemukan: '.$item['name']);
                     }
                     $actualProductId = $product->id;
                 } else {
                     // Normal format with product ID as key
                     $product = Product::find($productId);
-                    if (!$product) {
+                    if (! $product) {
                         throw new \Exception('Produk tidak ditemukan');
                     }
                     $actualProductId = $productId;
@@ -114,14 +114,14 @@ class CheckoutController extends Controller
 
             $totalAmount = $subtotal + $request->shipping_cost;
 
-            if (!Auth::check()) {
+            if (! Auth::check()) {
                 return redirect()->route('login')->with('error', 'Please login to continue checkout.');
             }
 
             // Create order
             $order = Order::create([
                 'user_id' => Auth::id(),
-                'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+                'order_number' => 'ORD-'.strtoupper(Str::random(8)),
                 'total_amount' => $totalAmount,
                 'status' => 'pending_payment',
                 'shipping_address' => $request->shipping_address,
@@ -129,7 +129,7 @@ class CheckoutController extends Controller
                 'shipping_cost' => $request->shipping_cost,
             ]);
 
-            if (!$order || !$order->id) {
+            if (! $order || ! $order->id) {
                 throw new \Exception('Order creation failed - no ID returned');
             }
 
@@ -158,6 +158,7 @@ class CheckoutController extends Controller
                 ->with('success', 'Pesanan berhasil dibuat. Silakan lakukan pembayaran.');
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->with('error', $e->getMessage());
         }
     }

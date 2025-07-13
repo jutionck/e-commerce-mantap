@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Payment;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
-use Exception;
 
 class MidtransService
 {
@@ -50,7 +50,7 @@ class MidtransService
                     'id' => 'SHIPPING',
                     'price' => (int) $order->shipping_cost,
                     'quantity' => 1,
-                    'name' => 'Shipping Cost - ' . $order->shipping_method,
+                    'name' => 'Shipping Cost - '.$order->shipping_method,
                 ];
             }
 
@@ -98,7 +98,7 @@ class MidtransService
                 'enabled_payments' => $transactionParams['enabled_payments'],
                 'order_id' => $order->order_number,
             ]);
-            
+
             // Create Snap token
             $snapToken = Snap::getSnapToken($transactionParams);
 
@@ -134,7 +134,7 @@ class MidtransService
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            throw new Exception('Failed to create payment token: ' . $e->getMessage());
+            throw new Exception('Failed to create payment token: '.$e->getMessage());
         }
     }
 
@@ -145,7 +145,7 @@ class MidtransService
     {
         try {
             $status = Transaction::status($orderId);
-            
+
             Log::info('Payment status retrieved', [
                 'order_id' => $orderId,
                 'status' => $status,
@@ -159,7 +159,7 @@ class MidtransService
                 'error' => $e->getMessage(),
             ]);
 
-            throw new Exception('Failed to verify payment: ' . $e->getMessage());
+            throw new Exception('Failed to verify payment: '.$e->getMessage());
         }
     }
 
@@ -184,20 +184,22 @@ class MidtransService
 
             // Find order and payment
             $order = Order::where('order_number', $orderId)->first();
-            if (!$order) {
+            if (! $order) {
                 Log::warning('Order not found for notification', ['order_id' => $orderId]);
+
                 return false;
             }
 
             $payment = Payment::where('order_id', $order->id)->first();
-            if (!$payment) {
+            if (! $payment) {
                 Log::warning('Payment not found for order', ['order_id' => $orderId]);
+
                 return false;
             }
 
             // Verify signature (for security)
-            $signatureKey = hash('sha512', 
-                $orderId . $notification['status_code'] . $grossAmount . config('midtrans.server_key')
+            $signatureKey = hash('sha512',
+                $orderId.$notification['status_code'].$grossAmount.config('midtrans.server_key')
             );
 
             if ($signatureKey !== ($notification['signature_key'] ?? '')) {
@@ -206,6 +208,7 @@ class MidtransService
                     'expected' => $signatureKey,
                     'received' => $notification['signature_key'] ?? '',
                 ]);
+
                 return false;
             }
 
@@ -238,7 +241,7 @@ class MidtransService
                 if ($fraudStatus === 'challenge') {
                     $paymentStatus = 'challenge';
                     $orderStatus = 'pending_verification';
-                } else if ($fraudStatus === 'accept') {
+                } elseif ($fraudStatus === 'accept') {
                     $paymentStatus = 'paid';
                     $orderStatus = 'paid';
                 }
@@ -297,7 +300,7 @@ class MidtransService
     {
         try {
             $result = Transaction::cancel($orderId);
-            
+
             Log::info('Payment cancelled', [
                 'order_id' => $orderId,
                 'result' => $result,
@@ -321,7 +324,7 @@ class MidtransService
     public function getPaymentUrls(): array
     {
         $environment = config('midtrans.environment');
-        
+
         return [
             'finish_url' => route('payments.success'),
             'unfinish_url' => route('payments.pending'),

@@ -6,9 +6,9 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Services\MidtransService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
@@ -24,13 +24,12 @@ class PaymentController extends Controller
      */
     public function index(Order $order)
     {
-        if (!Auth::check() || $order->user_id !== Auth::id()) {
+        if (! Auth::check() || $order->user_id !== Auth::id()) {
             abort(403, 'Unauthorized access to payment');
         }
 
-
         // Check if order is in correct status
-        if (!in_array($order->status, ['pending', 'pending_payment'])) {
+        if (! in_array($order->status, ['pending', 'pending_payment'])) {
             return redirect()->route('orders.show', $order)
                 ->with('error', 'Order is not eligible for payment');
         }
@@ -66,7 +65,7 @@ class PaymentController extends Controller
             return Inertia::render('Payment/Index', [
                 'order' => $order->load('orderItems.product'),
                 'paymentData' => $paymentData,
-                'snapUrl' => config('midtrans.urls.' . config('midtrans.environment') . '.snap'),
+                'snapUrl' => config('midtrans.urls.'.config('midtrans.environment').'.snap'),
             ]);
         } catch (\Exception $e) {
             Log::error('Payment page error', [
@@ -75,7 +74,7 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->route('orders.show', $order)
-                ->with('error', 'Failed to initialize payment: ' . $e->getMessage());
+                ->with('error', 'Failed to initialize payment: '.$e->getMessage());
         }
     }
 
@@ -113,7 +112,7 @@ class PaymentController extends Controller
     {
         $orderId = $request->get('order_id');
 
-        if (!$orderId) {
+        if (! $orderId) {
             return redirect()->route('orders.index')
                 ->with('error', 'Payment order not found');
         }
@@ -124,7 +123,7 @@ class PaymentController extends Controller
 
             $order = Order::where('order_number', $orderId)->first();
 
-            if (!$order) {
+            if (! $order) {
                 return redirect()->route('orders.index')
                     ->with('error', 'Order not found');
             }
@@ -156,14 +155,14 @@ class PaymentController extends Controller
     {
         $orderId = $request->get('order_id');
 
-        if (!$orderId) {
+        if (! $orderId) {
             return redirect()->route('orders.index')
                 ->with('warning', 'Payment is pending');
         }
 
         $order = Order::where('order_number', $orderId)->first();
 
-        if (!$order) {
+        if (! $order) {
             return redirect()->route('orders.index')
                 ->with('error', 'Order not found');
         }
@@ -185,14 +184,14 @@ class PaymentController extends Controller
     {
         $orderId = $request->get('order_id');
 
-        if (!$orderId) {
+        if (! $orderId) {
             return redirect()->route('orders.index')
                 ->with('error', 'Payment failed');
         }
 
         $order = Order::where('order_number', $orderId)->first();
 
-        if (!$order) {
+        if (! $order) {
             return redirect()->route('orders.index')
                 ->with('error', 'Order not found');
         }
@@ -242,7 +241,7 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->route('orders.show', $order)
-                ->with('error', 'Failed to cancel payment: ' . $e->getMessage());
+                ->with('error', 'Failed to cancel payment: '.$e->getMessage());
         }
     }
 
@@ -275,10 +274,10 @@ class PaymentController extends Controller
                         // Extract bank info from VA numbers or payment type
                         $bankInfo = '';
 
-                        if (isset($paymentData['va_numbers']) && !empty($paymentData['va_numbers'])) {
+                        if (isset($paymentData['va_numbers']) && ! empty($paymentData['va_numbers'])) {
                             $vaNumber = $paymentData['va_numbers'][0];
                             $vaNumber = is_object($vaNumber) ? json_decode(json_encode($vaNumber), true) : $vaNumber;
-                            $bankInfo = strtoupper($vaNumber['bank']) . ' Virtual Account';
+                            $bankInfo = strtoupper($vaNumber['bank']).' Virtual Account';
                         } elseif (isset($paymentData['payment_type'])) {
                             $paymentType = $paymentData['payment_type'];
                             switch ($paymentType) {
@@ -355,7 +354,7 @@ class PaymentController extends Controller
             ]);
         } catch (\Exception $e) {
             // Don't log 404 errors as they are expected for new transactions
-            if (!str_contains($e->getMessage(), 'Transaction doesn\'t exist')) {
+            if (! str_contains($e->getMessage(), 'Transaction doesn\'t exist')) {
                 Log::error('Failed to verify payment status', [
                     'order_id' => $order->order_number,
                     'error' => $e->getMessage(),

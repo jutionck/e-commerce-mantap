@@ -48,8 +48,7 @@ export default function OrderShow({ order }) {
                 alert('Gagal mengecek status payment');
             }
         } catch (error) {
-            console.error('Error checking payment:', error);
-            alert('Terjadi error saat mengecek status');
+            alert('Gagal mengecek status pembayaran. Coba lagi.');
         } finally {
             setIsChecking(false);
         }

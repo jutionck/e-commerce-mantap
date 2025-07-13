@@ -20,9 +20,9 @@ export default function CartIcon({ cart = {}, className = "" }) {
 
     const handleRemoveItem = (productId) => {
         destroy(route('cart.destroy', productId), {
-            preserveState: false,
+            preserveState: true,
             onSuccess: () => {
-                // Cart will be updated automatically due to preserveState: false
+                // Cart will be updated automatically
             }
         });
     };

@@ -13,12 +13,14 @@ use Inertia\Inertia;
 Route::get('/', [ProductController::class, 'index'])->name('home');
 
 // Test login route - remove in production
-Route::get('/test-login', function() {
+Route::get('/test-login', function () {
     $user = App\Models\User::where('email', 'test@example.com')->first();
     if ($user) {
         Auth::login($user);
-        return redirect('/')->with('success', 'Logged in as ' . $user->email);
+
+        return redirect('/')->with('success', 'Logged in as '.$user->email);
     }
+
     return redirect('/')->with('error', 'Test user not found');
 });
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');

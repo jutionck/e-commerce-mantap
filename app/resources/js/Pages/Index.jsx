@@ -11,14 +11,70 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/Components/ui/Select";
+import Dropdown from "@/Components/Dropdown";
 import Carousel from "@/Components/Carousel";
 import FlashSaleSection from "@/Components/FlashSaleSection";
+import CartIcon from "@/Components/CartIcon";
+import { AuthModals } from "@/Components/Auth/AuthModals";
 
-export default function Index({ auth, products = [], categories = [] }) {
+export default function Index({ auth, products = [], categories = [], cart = [] }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("name");
     const [viewMode, setViewMode] = useState("grid");
+    const [loadingProduct, setLoadingProduct] = useState(null);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+
+    // Calculate cart count
+    const cartCount = cart ? Object.values(cart).reduce((total, item) => total + item.quantity, 0) : 0;
+
+    // Add to cart function with loading state
+    const addToCart = (productId, quantity = 1) => {
+        setLoadingProduct(productId);
+        router.post('/cart', {
+            product_id: productId,
+            quantity: quantity
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            only: ['cart'],
+            onSuccess: () => {
+                // Show success message with better UI
+                const product = enhancedProducts.find(p => p.id === productId);
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                toast.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span>${product?.name || 'Product'} added to cart!</span>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => document.body.removeChild(toast), 300);
+                }, 3000);
+                setLoadingProduct(null);
+            },
+            onError: () => {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                toast.innerHTML = `
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span>Failed to add product to cart.</span>
+                `;
+                document.body.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.transform = 'translateX(100%)';
+                    setTimeout(() => document.body.removeChild(toast), 300);
+                }, 3000);
+                setLoadingProduct(null);
+            }
+        });
+    };
 
     // Enhanced product data with ratings for demonstration
     const enhancedProducts = useMemo(() => {
@@ -114,37 +170,20 @@ export default function Index({ auth, products = [], categories = [] }) {
         <div className="min-h-screen bg-gray-50">
             <Head title="Store - Your Online Shopping Destination" />
 
-            {/* Header - matching template design */}
-            <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+            {/* Simplified Header */}
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                                <svg
-                                    className="w-5 h-5 text-white"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                                    />
-                                </svg>
-                            </div>
-                            <span className="text-xl font-bold text-gray-900">
-                                Store
-                            </span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl font-bold text-gray-900">Store</span>
                         </div>
 
-                        {/* Search Bar - Center */}
-                        <div className="hidden md:flex flex-1 max-w-2xl mx-8">
+                        {/* Search Bar */}
+                        <div className="hidden md:flex flex-1 max-w-md mx-8">
                             <div className="relative w-full">
                                 <svg
-                                    className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -158,75 +197,43 @@ export default function Index({ auth, products = [], categories = [] }) {
                                 </svg>
                                 <Input
                                     type="text"
-                                    placeholder="Search for products, brands, categories..."
+                                    placeholder="Search products..."
                                     value={searchTerm}
-                                    onChange={(e) =>
-                                        setSearchTerm(e.target.value)
-                                    }
-                                    className="w-full pl-12 pr-4 py-2.5 text-base bg-gray-50 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-colors"
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                 />
-                                {searchTerm && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setSearchTerm("")}
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0 hover:bg-gray-100"
-                                    >
-                                        <svg
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                    </Button>
-                                )}
                             </div>
                         </div>
 
-                        {/* Navigation & Actions */}
-                        <div className="flex items-center gap-3 md:gap-6">
-                            {/* Navigation - Hidden on mobile */}
-                            <nav className="hidden lg:flex items-center gap-6">
-                                <Button
-                                    variant="ghost"
-                                    className="text-gray-700 hover:text-blue-600 font-medium"
-                                >
-                                    Categories
-                                </Button>
-                            </nav>
+                        {/* Right Actions */}
+                        <div className="flex items-center gap-3">
+                            {/* Categories Dropdown - Simple */}
+                            <Dropdown>
+                                <Dropdown.Trigger>
+                                    <Button variant="ghost" size="sm" className="hidden md:flex">
+                                        Categories
+                                        <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </Button>
+                                </Dropdown.Trigger>
+                                <Dropdown.Content align="right" width="48">
+                                    <Dropdown.Link onClick={() => setSelectedCategory("all")}>
+                                        All Categories
+                                    </Dropdown.Link>
+                                    {categories && categories.map((category) => (
+                                        <Dropdown.Link 
+                                            key={category.id}
+                                            onClick={() => setSelectedCategory(category.id.toString())}
+                                        >
+                                            {category.name}
+                                        </Dropdown.Link>
+                                    ))}
+                                </Dropdown.Content>
+                            </Dropdown>
 
-                            {/* Right side actions */}
-                            <div className="flex items-center gap-2 md:gap-3">
-                                {/* Shopping Cart */}
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="relative"
-                                >
-                                    <svg
-                                        className="h-5 w-5"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L12 21l2.5-3H7z"
-                                        />
-                                    </svg>
-                                    <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
-                                        3
-                                    </Badge>
-                                </Button>
+                            {/* Cart */}
+                            <CartIcon cart={cart} />
 
                                 {/* Authentication Buttons */}
                                 {auth?.user ? (
@@ -234,39 +241,88 @@ export default function Index({ auth, products = [], categories = [] }) {
                                         <span className="text-sm text-gray-700 hidden md:block">
                                             Welcome, {auth.user.name}
                                         </span>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-sm"
-                                            onClick={() =>
-                                                router.post("/logout")
-                                            }
-                                        >
-                                            Sign Out
-                                        </Button>
+                                        
+                                        {/* Single User Menu Dropdown */}
+                                        <Dropdown>
+                                            <Dropdown.Trigger>
+                                                <Button
+                                                    variant="default"
+                                                    size="sm"
+                                                    className="gap-2 bg-blue-600 hover:bg-blue-700"
+                                                >
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                    <span className="hidden sm:inline">My Account</span>
+                                                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                </Button>
+                                            </Dropdown.Trigger>
+                                            <Dropdown.Content align="right" width="56">
+                                                <div className="px-4 py-3 border-b">
+                                                    <div className="font-medium text-base text-gray-800">{auth.user.name}</div>
+                                                    <div className="font-medium text-sm text-gray-500">{auth.user.email}</div>
+                                                </div>
+                                                <Dropdown.Link href="/dashboard">
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                                    </svg>
+                                                    Dashboard
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href="/orders">
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                                                    </svg>
+                                                    My Orders
+                                                </Dropdown.Link>
+                                                <Dropdown.Link href="/profile">
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                    </svg>
+                                                    Profile Settings
+                                                </Dropdown.Link>
+                                                {auth.user.role === 'admin' && (
+                                                    <Dropdown.Link href="/admin">
+                                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                        </svg>
+                                                        Admin Panel
+                                                    </Dropdown.Link>
+                                                )}
+                                                <div className="border-t"></div>
+                                                <button
+                                                    onClick={() => router.post("/logout")}
+                                                    className="w-full text-left px-4 py-2 text-sm leading-5 text-red-700 hover:bg-red-50 focus:outline-none focus:bg-red-50 transition duration-150 ease-in-out flex items-center"
+                                                >
+                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                                    </svg>
+                                                    Sign Out
+                                                </button>
+                                            </Dropdown.Content>
+                                        </Dropdown>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <Link href="/login">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-gray-700 hover:text-blue-600 font-medium"
-                                            >
-                                                Sign In
-                                            </Button>
-                                        </Link>
-                                        <Link href="/register">
-                                            <Button
-                                                size="sm"
-                                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-3 md:px-6 font-medium text-sm"
-                                            >
-                                                Register
-                                            </Button>
-                                        </Link>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-gray-700 hover:text-blue-600 font-medium"
+                                            onClick={() => setIsLoginModalOpen(true)}
+                                        >
+                                            Sign In
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-3 md:px-6 font-medium text-sm"
+                                            onClick={() => setIsRegisterModalOpen(true)}
+                                        >
+                                            Register
+                                        </Button>
                                     </div>
                                 )}
-                            </div>
                         </div>
                     </div>
 
@@ -329,201 +385,54 @@ export default function Index({ auth, products = [], categories = [] }) {
             {/* <FlashSaleSection /> */}
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Enhanced Filter Section */}
-                <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-                    <CardContent className="p-6">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                            <div className="flex flex-col sm:flex-row gap-4 flex-1">
-                                {/* Category Filter */}
-                                <div className="flex-1">
-                                    <Select
-                                        value={selectedCategory}
-                                        onValueChange={setSelectedCategory}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="All Categories" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">
-                                                All Categories
-                                            </SelectItem>
-                                            {categories &&
-                                                categories.map((category) => (
-                                                    <SelectItem
-                                                        key={category.id}
-                                                        value={category.id.toString()}
-                                                    >
-                                                        <div className="flex items-center gap-2">
-                                                            <span>📦</span>
-                                                            <span>
-                                                                {category.name}
-                                                            </span>
-                                                        </div>
-                                                    </SelectItem>
-                                                ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                {/* Simple Filter Bar */}
+                <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <span className="text-lg font-semibold text-gray-900">
+                            {filteredProducts.length} Products
+                        </span>
+                    </div>
+                    
+                    <div className="flex gap-3">
+                        {/* Simple Sort */}
+                        <Select value={sortBy} onValueChange={setSortBy}>
+                            <SelectTrigger className="w-40">
+                                <SelectValue placeholder="Sort by" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="name">Name</SelectItem>
+                                <SelectItem value="price_low">Price: Low</SelectItem>
+                                <SelectItem value="price_high">Price: High</SelectItem>
+                                <SelectItem value="rating">Rating</SelectItem>
+                            </SelectContent>
+                        </Select>
 
-                                {/* Sort Filter */}
-                                <div className="flex-1">
-                                    <Select
-                                        value={sortBy}
-                                        onValueChange={setSortBy}
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Sort by" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="name">
-                                                Name (A-Z)
-                                            </SelectItem>
-                                            <SelectItem value="price_low">
-                                                Price (Low to High)
-                                            </SelectItem>
-                                            <SelectItem value="price_high">
-                                                Price (High to Low)
-                                            </SelectItem>
-                                            <SelectItem value="rating">
-                                                Highest Rated
-                                            </SelectItem>
-                                            <SelectItem value="stock">
-                                                Stock Level
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            {/* Results Count & Actions */}
-                            <div className="flex items-center gap-4">
-                                <Badge variant="outline" className="text-sm">
-                                    {filteredProducts.length} products found
-                                </Badge>
-
-                                {/* View Mode Toggle */}
-                                <div className="flex border rounded-lg overflow-hidden">
-                                    <Button
-                                        variant={
-                                            viewMode === "grid"
-                                                ? "default"
-                                                : "ghost"
-                                        }
-                                        size="sm"
-                                        onClick={() => setViewMode("grid")}
-                                        className="rounded-none"
-                                    >
-                                        <svg
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                                            />
-                                        </svg>
-                                    </Button>
-                                    <Button
-                                        variant={
-                                            viewMode === "list"
-                                                ? "default"
-                                                : "ghost"
-                                        }
-                                        size="sm"
-                                        onClick={() => setViewMode("list")}
-                                        className="rounded-none"
-                                    >
-                                        <svg
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                                            />
-                                        </svg>
-                                    </Button>
-                                </div>
-
-                                {hasActiveFilters && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={clearFilters}
-                                        className="gap-2 bg-transparent"
-                                    >
-                                        <svg
-                                            className="h-4 w-4"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            viewBox="0 0 24 24"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth={2}
-                                                d="M6 18L18 6M6 6l12 12"
-                                            />
-                                        </svg>
-                                        Clear Filters
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Shop by Category - matching template layout */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                        Shop by Category
-                    </h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                        <button
-                            onClick={() => setSelectedCategory("")}
-                            className={`p-4 rounded-lg border-2 transition duration-200 ${
-                                selectedCategory === ""
-                                    ? "border-blue-500 bg-blue-50 text-blue-700"
-                                    : "border-gray-200 hover:border-gray-300 text-gray-700"
-                            }`}
-                        >
-                            <div className="text-center">
-                                <div className="text-2xl mb-2">🛍️</div>
-                                <div className="text-sm font-medium">
-                                    All Products
-                                </div>
-                            </div>
-                        </button>
-                        {categories.map((category) => (
-                            <button
-                                key={category.id}
-                                onClick={() =>
-                                    setSelectedCategory(category.id.toString())
-                                }
-                                className={`p-4 rounded-lg border-2 transition duration-200 ${
-                                    selectedCategory === category.id.toString()
-                                        ? "border-blue-500 bg-blue-50 text-blue-700"
-                                        : "border-gray-200 hover:border-gray-300 text-gray-700"
-                                }`}
+                        {/* View Toggle */}
+                        <div className="flex border rounded-md">
+                            <Button
+                                variant={viewMode === "grid" ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setViewMode("grid")}
+                                className="rounded-r-none"
                             >
-                                <div className="text-center">
-                                    <div className="text-2xl mb-2">📦</div>
-                                    <div className="text-sm font-medium">
-                                        {category.name}
-                                    </div>
-                                </div>
-                            </button>
-                        ))}
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                            </Button>
+                            <Button
+                                variant={viewMode === "list" ? "default" : "ghost"}
+                                size="sm"
+                                onClick={() => setViewMode("list")}
+                                className="rounded-l-none"
+                            >
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                </svg>
+                            </Button>
+                        </div>
                     </div>
                 </div>
+
 
                 {/* Enhanced Products Grid */}
                 <div className="mb-8">
@@ -624,104 +533,86 @@ export default function Index({ auth, products = [], categories = [] }) {
                                                                     e.target.src =
                                                                         "/images/product_placeholder.svg";
                                                                 }}
+                                                                loading="lazy"
                                                             />
                                                         </Link>
+                                                        
+                                                        {/* Wishlist Button */}
+                                                        <button
+                                                            className="absolute top-3 right-12 p-2 bg-white/80 hover:bg-white rounded-full shadow-md transition-all duration-200 hover:scale-110"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                // Add to wishlist functionality here
+                                                            }}
+                                                        >
+                                                            <svg className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                                            </svg>
+                                                        </button>
 
-                                                        {/* Enhanced Badges with Highlights */}
-                                                        <div className="absolute top-3 left-3 flex flex-col gap-2">
-                                                            {/* Trending Badge */}
-                                                            {product.soldCount >
-                                                                50 && (
-                                                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-xs px-2 py-1 shadow-lg">
-                                                                    <span className="mr-1">
-                                                                        📈
-                                                                    </span>
-                                                                    Trending
+                                                        {/* Simple Stock Badge */}
+                                                        {product.stock <= 5 && product.stock > 0 && (
+                                                            <div className="absolute top-3 left-3">
+                                                                <Badge className="bg-orange-500 text-white text-xs">
+                                                                    Low Stock
                                                                 </Badge>
-                                                            )}
-
-                                                            {/* New Arrival Badge */}
-                                                            {products &&
-                                                                products.length >
-                                                                    0 &&
-                                                                product.id >
-                                                                    Math.max(
-                                                                        ...products.map(
-                                                                            (
-                                                                                p
-                                                                            ) =>
-                                                                                p.id
-                                                                        )
-                                                                    ) -
-                                                                        2 && (
-                                                                    <Badge className="bg-gradient-to-r from-green-500 to-teal-500 text-white font-semibold text-xs px-2 py-1 shadow-lg">
-                                                                        <span className="mr-1">
-                                                                            ✨
-                                                                        </span>
-                                                                        New
-                                                                    </Badge>
-                                                                )}
-
-                                                            {/* Hot Deal Badge */}
-                                                            {product.stock <=
-                                                                5 && (
-                                                                <Badge className="bg-gradient-to-r from-red-600 to-orange-600 text-white font-semibold text-xs px-2 py-1 shadow-lg animate-pulse">
-                                                                    <span className="mr-1">
-                                                                        🔥
-                                                                    </span>
-                                                                    Hot Deal
+                                                            </div>
+                                                        )}
+                                                        
+                                                        {product.stock === 0 && (
+                                                            <div className="absolute top-3 left-3">
+                                                                <Badge className="bg-red-500 text-white text-xs">
+                                                                    Out of Stock
                                                                 </Badge>
-                                                            )}
-
-                                                            {/* Discount Badge */}
-                                                            {product.originalPrice &&
-                                                                product.originalPrice >
-                                                                    product.price && (
-                                                                    <Badge className="bg-red-500 text-white font-bold text-xs px-2 py-1">
-                                                                        -
-                                                                        {Math.round(
-                                                                            (1 -
-                                                                                product.price /
-                                                                                    product.originalPrice) *
-                                                                                100
-                                                                        )}
-                                                                        %
-                                                                    </Badge>
-                                                                )}
-                                                        </div>
-
-                                                        <div className="absolute top-3 right-3">
-                                                            <Badge
-                                                                className={`text-xs px-2 py-1 ${stockStatus.color}`}
-                                                            >
-                                                                {
-                                                                    stockStatus.text
-                                                                }
-                                                            </Badge>
-                                                        </div>
+                                                            </div>
+                                                        )}
 
                                                         {/* Quick Actions */}
                                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                                             <Button
                                                                 size="sm"
                                                                 className="gap-2"
+                                                                disabled={loadingProduct === product.id || product.stock === 0}
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    addToCart(product.id);
+                                                                }}
                                                             >
-                                                                <svg
-                                                                    className="h-4 w-4"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    viewBox="0 0 24 24"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        strokeWidth={
-                                                                            2
-                                                                        }
-                                                                        d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L12 21l2.5-3H7z"
-                                                                    />
-                                                                </svg>
-                                                                Add to Cart
+                                                                {loadingProduct === product.id ? (
+                                                                    <>
+                                                                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                                        </svg>
+                                                                        Adding...
+                                                                    </>
+                                                                ) : product.stock === 0 ? (
+                                                                    <>
+                                                                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                        Out of Stock
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <svg
+                                                                            className="h-4 w-4"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            viewBox="0 0 24 24"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                strokeWidth={2}
+                                                                                d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L12 21l2.5-3H7z"
+                                                                            />
+                                                                        </svg>
+                                                                        Add to Cart
+                                                                    </>
+                                                                )}
                                                             </Button>
                                                         </div>
                                                     </div>
@@ -982,23 +873,46 @@ export default function Index({ auth, products = [], categories = [] }) {
                                                                 <Button
                                                                     size="sm"
                                                                     className="gap-2"
+                                                                    disabled={loadingProduct === product.id || product.stock === 0}
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        addToCart(product.id);
+                                                                    }}
                                                                 >
-                                                                    <svg
-                                                                        className="h-3 w-3"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        viewBox="0 0 24 24"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth={
-                                                                                2
-                                                                            }
-                                                                            d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L12 21l2.5-3H7z"
-                                                                        />
-                                                                    </svg>
-                                                                    Add to Cart
+                                                                    {loadingProduct === product.id ? (
+                                                                        <>
+                                                                            <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                                                            </svg>
+                                                                            Adding...
+                                                                        </>
+                                                                    ) : product.stock === 0 ? (
+                                                                        <>
+                                                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                                            </svg>
+                                                                            Out of Stock
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <svg
+                                                                                className="h-3 w-3"
+                                                                                fill="none"
+                                                                                stroke="currentColor"
+                                                                                viewBox="0 0 24 24"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    strokeWidth={2}
+                                                                                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5L12 21l2.5-3H7z"
+                                                                                />
+                                                                            </svg>
+                                                                            Add to Cart
+                                                                        </>
+                                                                    )}
                                                                 </Button>
                                                             </div>
                                                         </div>
@@ -1014,8 +928,129 @@ export default function Index({ auth, products = [], categories = [] }) {
                 </div>
             </div>
 
+            {/* Payment & Shipping Methods Section */}
+            <div className="bg-gray-50 py-12 border-t">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        {/* Payment Methods */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-700 mb-6">Metode Pembayaran</h3>
+                            <div className="space-y-4">
+                                {/* Bank Row 1 */}
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        {/* TODO: Replace with logo <img src="/images/logos/bca-logo.svg" alt="BCA" className="h-6" /> */}
+                                        <span className="text-blue-600 font-bold text-sm">BCA</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-orange-600 font-bold text-sm">BNI</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-800 font-bold text-sm">BRI</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-500 font-bold text-xs">BSI</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-orange-500 font-bold text-xs">BTPN</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-600 font-bold text-xs">CIMB</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-600 font-bold text-xs">DANAMON</span>
+                                    </div>
+                                </div>
+                                
+                                {/* E-Wallet Row 2 */}
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-600 font-bold text-xs">HANA</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-500 font-bold text-xs">JENIUS</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-800 font-bold text-xs">MANDIRI</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-yellow-500 font-bold text-xs">MAYBANK</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-green-600 font-bold text-xs">PERMATA</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-600 font-bold text-xs">DANA</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-500 font-bold text-xs">LinkAja</span>
+                                    </div>
+                                </div>
+
+                                {/* Payment Methods Row 3 */}
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-purple-600 font-bold text-xs">OVO</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-600 font-bold text-xs">ShopeePay</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-500 font-bold text-xs">QRIS</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Shipping Methods */}
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-700 mb-6">Jasa Pengiriman</h3>
+                            <div className="space-y-4">
+                                {/* Shipping Row 1 */}
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        {/* TODO: Replace with logo <img src="/images/logos/anteraja-logo.svg" alt="AnterAja" className="h-6" /> */}
+                                        <span className="text-red-600 font-bold text-xs">AnterAja</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-green-600 font-bold text-xs">GoSend</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-600 font-bold text-xs">JNE</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-orange-600 font-bold text-xs">Paxel</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-500 font-bold text-xs">SiCepat</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-blue-600 font-bold text-xs">POS</span>
+                                    </div>
+                                    <div className="flex items-center justify-center w-16 h-10 bg-white border border-gray-200 rounded">
+                                        <span className="text-red-600 font-bold text-xs">J&T</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Free Shipping Notice */}
+                            <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <div className="flex items-center gap-2">
+                                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                    </svg>
+                                    <p className="text-sm text-blue-800">
+                                        <span className="font-semibold">Gratis Ongkir</span> untuk pembelian minimal IDR 500,000
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Full Width Features Section */}
-            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 py-16 mt-12">
+            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 py-16">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -1211,6 +1246,24 @@ export default function Index({ auth, products = [], categories = [] }) {
                     </div>
                 </div>
             </footer>
+
+            {/* Authentication Modals */}
+            <AuthModals
+                isLoginOpen={isLoginModalOpen}
+                isRegisterOpen={isRegisterModalOpen}
+                onClose={() => {
+                    setIsLoginModalOpen(false);
+                    setIsRegisterModalOpen(false);
+                }}
+                onSwitchToLogin={() => {
+                    setIsRegisterModalOpen(false);
+                    setIsLoginModalOpen(true);
+                }}
+                onSwitchToRegister={() => {
+                    setIsLoginModalOpen(false);
+                    setIsRegisterModalOpen(true);
+                }}
+            />
         </div>
     );
 }

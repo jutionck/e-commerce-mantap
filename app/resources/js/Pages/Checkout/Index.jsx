@@ -26,14 +26,11 @@ export default function Index({ cartItems, totalAmount }) {
         }
         
         try {
-            console.log('Fetching shipping options for:', data.shipping_address.city);
             const response = await axios.post('/shipping-cost', {
                 destination: data.shipping_address.city,
             });
-            console.log('Shipping options received:', response.data);
             setShippingOptions(response.data);
         } catch (error) {
-            console.error('Error fetching shipping options:', error);
             alert('Gagal mengambil opsi pengiriman. Coba lagi.');
         }
     }
@@ -49,16 +46,8 @@ export default function Index({ cartItems, totalAmount }) {
 
     function submit(e) {
         e.preventDefault();
-        console.log('Form submit triggered');
-        console.log('Form data:', data);
-        console.log('Selected shipping:', selectedShipping);
         
-        post(route('checkout.store'), {
-            onStart: () => console.log('Request started'),
-            onSuccess: (response) => console.log('Success:', response),
-            onError: (errors) => console.log('Errors:', errors),
-            onFinish: () => console.log('Request finished')
-        });
+        post(route('checkout.store'));
     }
 
     const formatPrice = (price) => {
