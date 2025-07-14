@@ -35,6 +35,12 @@ export default function Index({ auth, products = [], categories = [], cart = [],
 
     // Add to cart function with loading state
     const addToCart = (productId, quantity = 1) => {
+        // Check if user is authenticated
+        if (!auth?.user) {
+            setIsLoginModalOpen(true);
+            return;
+        }
+
         setLoadingProduct(productId);
         router.post('/cart', {
             product_id: productId,
