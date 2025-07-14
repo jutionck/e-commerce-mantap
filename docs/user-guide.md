@@ -4,44 +4,81 @@
 1. [Pengenalan](#pengenalan)
 2. [Registrasi dan Login](#registrasi-dan-login)
 3. [Belanja Produk](#belanja-produk)
-4. [Keranjang Belanja](#keranjang-belanja)
-5. [Checkout dan Pembayaran](#checkout-dan-pembayaran)
-6. [Mengelola Pesanan](#mengelola-pesanan)
-7. [Profile dan Akun](#profile-dan-akun)
-8. [Admin Panel](#admin-panel)
+4. [Wishlist](#wishlist)
+5. [Keranjang Belanja](#keranjang-belanja)
+6. [Checkout dan Pembayaran](#checkout-dan-pembayaran)
+7. [Mengelola Pesanan](#mengelola-pesanan)
+8. [Profile dan Akun](#profile-dan-akun)
+9. [Admin Panel](#admin-panel)
 
 ## Pengenalan
 
 Aplikasi E-Commerce ini adalah platform jual beli online yang memungkinkan Anda untuk:
-- Menjelajahi katalog produk
-- Menambah produk ke keranjang belanja
-- Melakukan checkout dan pembayaran
-- Melacak status pesanan
-- Mengelola profil akun
+- Menjelajahi katalog produk dengan categories dropdown modern
+- Menyimpan produk favorit dalam wishlist dengan heart icons
+- Menambah produk ke keranjang belanja dengan preview dropdown
+- Melakukan checkout dan pembayaran dengan multiple methods
+- Melacak status pesanan secara real-time
+- Mengelola profil akun dengan authentication modal
 
 ## Registrasi dan Login
 
+### 🎯 Modern Authentication dengan Modal
+Aplikasi menggunakan **modal authentication** yang modern dan user-friendly, tidak perlu redirect ke halaman terpisah.
+
 ### Cara Registrasi
 1. Klik tombol **"Register"** di halaman utama
-2. Isi form registrasi dengan:
-   - Nama lengkap
-   - Email address
-   - Password (minimal 8 karakter)
-   - Konfirmasi password
-3. Klik **"Register"** untuk membuat akun
-4. Cek email untuk verifikasi akun (jika diperlukan)
+2. **Modal Register** akan muncul dengan features:
+   - Form registrasi yang responsive
+   - Real-time password validation dengan checklist requirements
+   - Terms & Conditions modal dengan scroll agreement
+   - Newsletter subscription option
+   - Close button atau click outside untuk menutup
+3. Isi form registrasi dengan:
+   - **Nama lengkap**: Full name requirement
+   - **Email address**: Valid email format
+   - **Password**: Minimal 8 karakter dengan requirements:
+     - At least 8 characters ✓
+     - One uppercase letter ✓
+     - One lowercase letter ✓
+     - One number ✓
+     - One special character ✓
+   - **Konfirmasi password**: Must match original password
+4. **Accept Terms**: Klik link untuk baca terms, centang agreement
+5. Klik **"Create Account"** untuk membuat akun
+6. Modal akan tertutup dan user langsung login
 
 ### Cara Login
-1. Klik tombol **"Login"** di halaman utama
-2. Masukkan email dan password
-3. Klik **"Log in"** untuk masuk
-4. Anda akan diarahkan ke dashboard
+1. Klik tombol **"Login"** di halaman utama atau saat perlu authentication
+2. **Modal Login** akan muncul dengan features:
+   - Responsive login form
+   - Remember me option
+   - Show/hide password toggle
+   - Direct forgot password link
+3. Masukkan email dan password
+4. Optional: Centang "Remember me" untuk session yang lebih lama
+5. Klik **"Sign In"** untuk masuk
+6. Modal tertutup dan page refresh dengan user authenticated
 
 ### Lupa Password
-1. Di halaman login, klik **"Forgot your password?"**
-2. Masukkan email address Anda
-3. Cek email untuk link reset password
-4. Ikuti instruksi di email untuk reset password
+1. Di modal login, klik **"Forgot your password?"**
+2. Akan diarahkan ke halaman reset password
+3. Masukkan email address Anda
+4. Cek email untuk link reset password
+5. Ikuti instruksi di email untuk reset password
+
+### 🚀 Social Authentication (Coming Soon)
+- **Google Login**: Disabled dengan "Coming Soon" label
+- **Facebook Login**: Disabled dengan "Coming Soon" label
+- Akan diaktifkan di update mendatang
+
+### Modal Features
+- **Responsive Design**: Optimal di desktop, tablet, dan mobile
+- **Keyboard Navigation**: Tab navigation dan Enter/Escape shortcuts
+- **Loading States**: Loading indicators saat processing
+- **Error Handling**: Inline validation errors dengan clear messages
+- **Auto-close**: Modal tertutup otomatis setelah sukses
+- **Switch Modals**: Easy switch antara login dan register tanpa close
 
 ## Belanja Produk
 
@@ -64,6 +101,90 @@ Setiap produk menampilkan:
 2. Klik tombol **"Tambah ke Keranjang"**
 3. Produk akan ditambahkan ke session keranjang
 4. Notifikasi konfirmasi akan muncul
+
+## Wishlist
+
+### 💝 Fitur Wishlist
+Wishlist adalah fitur untuk menyimpan produk favorit Anda agar mudah diakses nanti. Fitur ini memungkinkan Anda untuk:
+- Menyimpan produk yang ingin dibeli di masa depan
+- Membandingkan produk yang disukai
+- Melacak produk yang sedang dipertimbangkan
+- Berbagi daftar keinginan dengan orang lain
+
+### ❤️ Heart Icons pada Product Cards
+- **Heart Icon**: Setiap product card memiliki heart icon di pojok kanan atas
+- **Visual States**: 
+  - **Empty Heart**: Produk belum di-wishlist (gray color)
+  - **Filled Heart**: Produk sudah di-wishlist (red color with fill)
+- **Hover Effects**: Heart icon berubah warna saat di-hover
+- **Animation**: Smooth scale animation saat di-hover
+
+### Menambah/Menghapus dari Wishlist
+1. **Untuk User yang Sudah Login**:
+   - Klik heart icon pada produk yang diinginkan
+   - Icon akan berubah dari empty menjadi filled (atau sebaliknya)
+   - Toast notification akan muncul: "Added to wishlist" atau "Removed from wishlist"
+   - Perubahan tersimpan secara real-time
+
+2. **Untuk User yang Belum Login**:
+   - Klik heart icon akan memunculkan modal login
+   - Login terlebih dahulu untuk menggunakan fitur wishlist
+   - Setelah login, dapat langsung menggunakan wishlist
+
+### 🏠 Wishlist Icon di Header
+- **Wishlist Icon**: Heart icon di navigation header (hanya untuk user yang sudah login)
+- **Count Badge**: Menampilkan jumlah item dalam wishlist dengan red badge
+- **Visual States**: 
+  - Empty heart jika wishlist kosong
+  - Filled red heart dengan count jika ada item
+- **Link**: Klik untuk langsung ke halaman wishlist
+
+### 📱 Halaman Wishlist
+Akses melalui wishlist icon di header atau direct URL `/wishlist`
+
+#### Jika Wishlist Kosong:
+- **Empty State**: Design yang user-friendly dengan heart icon besar
+- **Message**: "Your wishlist is empty" dengan penjelasan
+- **Call to Action**: "Browse Products" button untuk mulai berbelanja
+- **Guidance**: Tips tentang cara menggunakan wishlist
+
+#### Jika Ada Item dalam Wishlist:
+- **Product Grid**: Layout grid responsif menampilkan produk tersimpan
+- **Product Cards**: Setiap card menampilkan:
+  - Gambar produk dengan hover effects
+  - Nama produk (clickable ke detail page)
+  - Kategori dengan badge
+  - Harga dengan format IDR
+  - Stock status dan informasi stok
+  - Heart icon untuk remove dari wishlist
+  - "Add to Cart" button untuk langsung beli
+  - "View" button untuk ke detail produk
+
+#### Features di Halaman Wishlist:
+- **Product Count**: Header menampilkan jumlah item
+- **Quick Actions**:
+  - Add to Cart langsung dari wishlist
+  - Remove dari wishlist dengan heart icon
+  - View detail produk
+- **Responsive Design**: Optimal di desktop, tablet, dan mobile
+- **Stock Indicators**: 
+  - "Only X left" badge untuk stock terbatas
+  - "Out of Stock" overlay jika habis
+- **Continue Shopping**: Section untuk browse produk lain
+
+### Toast Notifications
+- **Added to Wishlist**: Toast hijau dengan checkmark icon
+- **Removed from Wishlist**: Toast abu-abu dengan heart icon
+- **Login Required**: Toast biru dengan lock icon jika belum login
+- **Auto Dismiss**: Toast otomatis hilang setelah 3-4 detik
+- **Smooth Animation**: Slide in dari kanan, slide out ke kanan
+
+### Technical Features
+- **Real-time Updates**: Wishlist count update langsung setelah add/remove
+- **Session Persistence**: Wishlist tersimpan di database per user
+- **Performance**: Optimized loading dan smooth animations
+- **Error Handling**: Proper error messages jika terjadi masalah
+- **Accessibility**: Keyboard navigation dan screen reader support
 
 ## Keranjang Belanja
 
