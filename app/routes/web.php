@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
@@ -57,6 +58,11 @@ Route::middleware('auth')->group(function () {
     Route::get('wishlist', [WishlistController::class, 'index'])->name('wishlist.index');
     Route::post('wishlist/{product}/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::delete('wishlist/{product}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+
+    // Address routes
+    Route::resource('addresses', AddressController::class);
+    Route::post('addresses/{address}/set-default', [AddressController::class, 'setDefault'])->name('addresses.set-default');
+    Route::get('api/addresses', [AddressController::class, 'getAddresses'])->name('api.addresses');
 });
 
 Route::get('/dashboard', function () {

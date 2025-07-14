@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -46,21 +47,31 @@ class CheckoutController extends Controller
             }
         }
 
+        // Get user's saved addresses
+        $addresses = Auth::user()->addresses()->orderBy('is_default', 'desc')->get();
+        $defaultAddress = Auth::user()->defaultAddress;
+
         return Inertia::render('Checkout/Index', [
             'cartItems' => $cartItems,
             'totalAmount' => $totalAmount,
+            'addresses' => $addresses,
+            'defaultAddress' => $defaultAddress,
         ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'shipping_address' => 'required|array',
-            'shipping_address.name' => 'required|string|max:255',
-            'shipping_address.phone' => 'required|string|max:20',
-            'shipping_address.address' => 'required|string',
-            'shipping_address.city' => 'required|string|max:100',
-            'shipping_address.postal_code' => 'required|string|max:10',
+            'address_option' => 'required|string|in:saved,new',
+            'selected_address_id' => 'required_if:address_option,saved|exists:user_addresses,id',
+            'shipping_address' => 'required_if:address_option,new|array',
+            'shipping_address.name' => 'required_if:address_option,new|string|max:255',
+            'shipping_address.phone' => 'required_if:address_option,new|string|max:20',
+            'shipping_address.address' => 'required_if:address_option,new|string',
+            'shipping_address.city' => 'required_if:address_option,new|string|max:100',
+            'shipping_address.postal_code' => 'required_if:address_option,new|string|max:10',
+            'save_address' => 'boolean',
+            'address_label' => 'string|max:255',
             'shipping_method' => 'required|string',
             'shipping_cost' => 'required|numeric|min:0',
         ]);
@@ -74,6 +85,9 @@ class CheckoutController extends Controller
         DB::beginTransaction();
 
         try {
+            // Get shipping address based on option
+            $shippingAddress = $this->getShippingAddress($request);
+            
             // Calculate total
             $subtotal = 0;
             $orderItems = [];
@@ -124,7 +138,7 @@ class CheckoutController extends Controller
                 'order_number' => 'ORD-'.strtoupper(Str::random(8)),
                 'total_amount' => $totalAmount,
                 'status' => 'pending_payment',
-                'shipping_address' => $request->shipping_address,
+                'shipping_address' => $shippingAddress,
                 'shipping_method' => $request->shipping_method,
                 'shipping_cost' => $request->shipping_cost,
             ]);
@@ -160,6 +174,40 @@ class CheckoutController extends Controller
             DB::rollback();
 
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    private function getShippingAddress(Request $request)
+    {
+        if ($request->address_option === 'saved') {
+            // Use saved address
+            $address = UserAddress::where('user_id', Auth::id())
+                ->where('id', $request->selected_address_id)
+                ->first();
+                
+            if (!$address) {
+                throw new \Exception('Alamat yang dipilih tidak ditemukan');
+            }
+            
+            return $address->toShippingArray();
+        } else {
+            // Use new address
+            $addressData = $request->shipping_address;
+            
+            // Save address if requested
+            if ($request->save_address) {
+                $savedAddress = Auth::user()->addresses()->create([
+                    'label' => $request->address_label ?: 'Alamat Baru',
+                    'name' => $addressData['name'],
+                    'phone' => $addressData['phone'],
+                    'address' => $addressData['address'],
+                    'city' => $addressData['city'],
+                    'postal_code' => $addressData['postal_code'],
+                    'is_default' => Auth::user()->addresses()->count() === 0, // Set as default if it's the first address
+                ]);
+            }
+            
+            return $addressData;
         }
     }
 }
