@@ -16,8 +16,12 @@ import Carousel from "@/Components/Carousel";
 import FlashSaleSection from "@/Components/FlashSaleSection";
 import CartIcon from "@/Components/CartIcon";
 import { AuthModals } from "@/Components/Auth/AuthModals";
+import CategoriesDropdown from "@/Components/CategoriesDropdown";
+import MobileCategoriesMenu from "@/Components/MobileCategoriesMenu";
+import WishlistButton from "@/Components/WishlistButton";
+import WishlistIcon from "@/Components/WishlistIcon";
 
-export default function Index({ auth, products = [], categories = [], cart = [] }) {
+export default function Index({ auth, products = [], categories = [], cart = [], wishlistCount = 0 }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [sortBy, setSortBy] = useState("name");
@@ -207,30 +211,24 @@ export default function Index({ auth, products = [], categories = [], cart = [] 
 
                         {/* Right Actions */}
                         <div className="flex items-center gap-3">
-                            {/* Categories Dropdown - Simple */}
-                            <Dropdown>
-                                <Dropdown.Trigger>
-                                    <Button variant="ghost" size="sm" className="hidden md:flex">
-                                        Categories
-                                        <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                                        </svg>
-                                    </Button>
-                                </Dropdown.Trigger>
-                                <Dropdown.Content align="right" width="48">
-                                    <Dropdown.Link onClick={() => setSelectedCategory("all")}>
-                                        All Categories
-                                    </Dropdown.Link>
-                                    {categories && categories.map((category) => (
-                                        <Dropdown.Link 
-                                            key={category.id}
-                                            onClick={() => setSelectedCategory(category.id.toString())}
-                                        >
-                                            {category.name}
-                                        </Dropdown.Link>
-                                    ))}
-                                </Dropdown.Content>
-                            </Dropdown>
+                            {/* Categories - Desktop & Mobile */}
+                            <div className="hidden md:block">
+                                <CategoriesDropdown 
+                                    categories={categories}
+                                    selectedCategory={selectedCategory}
+                                    onCategorySelect={setSelectedCategory}
+                                />
+                            </div>
+                            <MobileCategoriesMenu 
+                                categories={categories}
+                                selectedCategory={selectedCategory}
+                                onCategorySelect={setSelectedCategory}
+                            />
+
+                            {/* Wishlist */}
+                            {auth?.user && (
+                                <WishlistIcon wishlistCount={wishlistCount} />
+                            )}
 
                             {/* Cart */}
                             <CartIcon cart={cart} />
@@ -538,18 +536,15 @@ export default function Index({ auth, products = [], categories = [], cart = [] 
                                                         </Link>
                                                         
                                                         {/* Wishlist Button */}
-                                                        <button
-                                                            className="absolute top-3 right-12 p-2 bg-white/80 hover:bg-white rounded-full shadow-md transition-all duration-200 hover:scale-110"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                // Add to wishlist functionality here
-                                                            }}
-                                                        >
-                                                            <svg className="h-4 w-4 text-gray-600 hover:text-red-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                                            </svg>
-                                                        </button>
+                                                        <div className="absolute top-3 right-3 z-20">
+                                                            <WishlistButton 
+                                                                product={product}
+                                                                isWishlisted={product.is_wishlisted}
+                                                                size="sm"
+                                                                auth={auth}
+                                                                onLoginRequired={() => setIsLoginModalOpen(true)}
+                                                            />
+                                                        </div>
 
                                                         {/* Simple Stock Badge */}
                                                         {product.stock <= 5 && product.stock > 0 && (
@@ -569,7 +564,7 @@ export default function Index({ auth, products = [], categories = [], cart = [] 
                                                         )}
 
                                                         {/* Quick Actions */}
-                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-10">
                                                             <Button
                                                                 size="sm"
                                                                 className="gap-2"

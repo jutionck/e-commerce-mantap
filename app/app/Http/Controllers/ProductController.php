@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Wishlist;
 use Inertia\Inertia;
 
 class ProductController extends Controller
@@ -13,10 +14,21 @@ class ProductController extends Controller
         $products = Product::with(['category', 'images'])->latest()->get();
         $categories = Category::all();
 
-        // Add primary image and all images to each product
-        $products->transform(function ($product) {
+        // Get user's wishlist if authenticated
+        $userWishlist = [];
+        $wishlistCount = 0;
+        if (auth()->check()) {
+            $userWishlist = Wishlist::where('user_id', auth()->id())
+                ->pluck('product_id')
+                ->toArray();
+            $wishlistCount = count($userWishlist);
+        }
+
+        // Add primary image, all images, and wishlist status to each product
+        $products->transform(function ($product) use ($userWishlist) {
             $product->primary_image = $product->primaryImage();
             $product->all_images = $product->allImages();
+            $product->is_wishlisted = in_array($product->id, $userWishlist);
 
             return $product;
         });
@@ -24,6 +36,8 @@ class ProductController extends Controller
         return Inertia::render('Index', [
             'products' => $products,
             'categories' => $categories,
+            'userWishlist' => $userWishlist,
+            'wishlistCount' => $wishlistCount,
         ]);
     }
 
