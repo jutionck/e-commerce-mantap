@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import { Head, Link, useForm } from "@inertiajs/react";
 import PublicLayout from "@/Layouts/PublicLayout";
+import { AuthModals } from "@/Components/Auth/AuthModals";
+import WishlistButton from "@/Components/WishlistButton";
 
 export default function Show({ auth, product, relatedProducts = [] }) {
     const [selectedQuantity, setSelectedQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState("description");
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
     const { setData, post, processing, errors } = useForm({
         product_id: product.id,
@@ -58,11 +62,31 @@ export default function Show({ auth, product, relatedProducts = [] }) {
     const handleAddToCart = (e) => {
         e.preventDefault();
         if (!auth?.user) {
-            // Redirect to login if not authenticated
-            window.location.href = route("login");
+            // Show login modal instead of redirecting
+            setIsLoginModalOpen(true);
             return;
         }
         post(route("cart.store"));
+    };
+
+    // Modal handlers
+    const handleCloseModal = () => {
+        setIsLoginModalOpen(false);
+        setIsRegisterModalOpen(false);
+    };
+
+    const handleSwitchToRegister = () => {
+        setIsLoginModalOpen(false);
+        setIsRegisterModalOpen(true);
+    };
+
+    const handleSwitchToLogin = () => {
+        setIsRegisterModalOpen(false);
+        setIsLoginModalOpen(true);
+    };
+
+    const handleWishlistLoginRequired = () => {
+        setIsLoginModalOpen(true);
     };
 
     return (
@@ -352,12 +376,15 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                                             )}
                                         </button>
 
-                                        <button
-                                            type="button"
-                                            className="w-full py-4 px-6 border-2 border-blue-600 text-blue-600 rounded-xl text-lg font-semibold hover:bg-blue-50 transition-colors duration-200"
-                                        >
-                                            Add to Wishlist
-                                        </button>
+                                        <div className="w-full py-4 px-6 border-2 border-blue-600 text-blue-600 rounded-xl text-lg font-semibold hover:bg-blue-50 transition-colors duration-200 flex items-center justify-center space-x-2">
+                                            <WishlistButton
+                                                product={product}
+                                                auth={auth}
+                                                onLoginRequired={handleWishlistLoginRequired}
+                                                className="w-5 h-5"
+                                            />
+                                            <span>Add to Wishlist</span>
+                                        </div>
                                     </>
                                 ) : (
                                     <div className="w-full py-4 px-6 bg-gray-100 text-gray-500 rounded-xl text-lg font-semibold text-center">
@@ -367,12 +394,12 @@ export default function Show({ auth, product, relatedProducts = [] }) {
 
                                 {!auth?.user && (
                                     <p className="text-sm text-gray-600 text-center">
-                                        <Link
-                                            href={route("login")}
-                                            className="text-blue-600 hover:underline"
+                                        <button
+                                            onClick={() => setIsLoginModalOpen(true)}
+                                            className="text-blue-600 hover:underline cursor-pointer"
                                         >
                                             Sign in
-                                        </Link>{" "}
+                                        </button>{" "}
                                         to add items to your cart
                                     </p>
                                 )}
@@ -647,6 +674,15 @@ export default function Show({ auth, product, relatedProducts = [] }) {
                     </div>
                 )}
             </div>
+
+            {/* Authentication Modals */}
+            <AuthModals
+                isLoginOpen={isLoginModalOpen}
+                isRegisterOpen={isRegisterModalOpen}
+                onClose={handleCloseModal}
+                onSwitchToLogin={handleSwitchToLogin}
+                onSwitchToRegister={handleSwitchToRegister}
+            />
         </PublicLayout>
     );
 }

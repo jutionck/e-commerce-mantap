@@ -3,17 +3,36 @@ import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import CartIcon from '@/Components/CartIcon';
+import { AuthModals } from '@/Components/Auth/AuthModals';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function PublicLayout({ user, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const { props } = usePage();
     const cart = props.cart || {};
 
+    // Modal handlers
+    const handleCloseModal = () => {
+        setIsLoginModalOpen(false);
+        setIsRegisterModalOpen(false);
+    };
+
+    const handleSwitchToRegister = () => {
+        setIsLoginModalOpen(false);
+        setIsRegisterModalOpen(true);
+    };
+
+    const handleSwitchToLogin = () => {
+        setIsRegisterModalOpen(false);
+        setIsLoginModalOpen(true);
+    };
+
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white shadow-sm">
+            <nav className="border-b border-gray-200 bg-white shadow-sm">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -108,18 +127,18 @@ export default function PublicLayout({ user, children }) {
                                 </div>
                             ) : (
                                 <div className="flex space-x-4">
-                                    <Link
-                                        href={route('login')}
+                                    <button
+                                        onClick={() => setIsLoginModalOpen(true)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-gray-500 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
                                     >
                                         Log in
-                                    </Link>
-                                    <Link
-                                        href={route('register')}
+                                    </button>
+                                    <button
+                                        onClick={() => setIsRegisterModalOpen(true)}
                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
                                     >
                                         Register
-                                    </Link>
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -204,12 +223,18 @@ export default function PublicLayout({ user, children }) {
                             </>
                         ) : (
                             <>
-                                <ResponsiveNavLink href={route('login')}>
+                                <button
+                                    onClick={() => setIsLoginModalOpen(true)}
+                                    className="block w-full pl-3 pr-4 py-2 border-l-4 border-transparent text-left text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out"
+                                >
                                     Log in
-                                </ResponsiveNavLink>
-                                <ResponsiveNavLink href={route('register')}>
+                                </button>
+                                <button
+                                    onClick={() => setIsRegisterModalOpen(true)}
+                                    className="block w-full pl-3 pr-4 py-2 border-l-4 border-transparent text-left text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300 transition duration-150 ease-in-out"
+                                >
                                     Register
-                                </ResponsiveNavLink>
+                                </button>
                             </>
                         )}
                     </div>
@@ -248,6 +273,15 @@ export default function PublicLayout({ user, children }) {
             </nav>
 
             <main>{children}</main>
+            
+            {/* Authentication Modals */}
+            <AuthModals
+                isLoginOpen={isLoginModalOpen}
+                isRegisterOpen={isRegisterModalOpen}
+                onClose={handleCloseModal}
+                onSwitchToLogin={handleSwitchToLogin}
+                onSwitchToRegister={handleSwitchToRegister}
+            />
         </div>
     );
 }
