@@ -2,18 +2,21 @@ import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
+import CartIcon from '@/Components/CartIcon';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
+    const { props } = usePage();
+    const cart = props.cart || {};
 
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
     return (
         <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-200 bg-white">
+            <nav className="border-b border-gray-200 bg-white shadow-sm">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
@@ -24,6 +27,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
 
                             <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                                <NavLink
+                                    href={route('home')}
+                                    active={route().current('home')}
+                                >
+                                    Home
+                                </NavLink>
                                 <NavLink
                                     href={route('dashboard')}
                                     active={route().current('dashboard')}
@@ -36,10 +45,19 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Pesanan Saya
                                 </NavLink>
+                                <NavLink
+                                    href={route('cart.index')}
+                                    active={route().current('cart.*')}
+                                >
+                                    Keranjang
+                                </NavLink>
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div className="hidden sm:ms-6 sm:flex sm:items-center space-x-4">
+                            {/* Cart Icon */}
+                            <CartIcon cart={cart} />
+                            
                             <div className="relative ms-3">
                                 <Dropdown>
                                     <Dropdown.Trigger>
@@ -142,6 +160,12 @@ export default function AuthenticatedLayout({ header, children }) {
                 >
                     <div className="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
+                            href={route('home')}
+                            active={route().current('home')}
+                        >
+                            Home
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
                             href={route('dashboard')}
                             active={route().current('dashboard')}
                         >
@@ -152,6 +176,12 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('orders.*')}
                         >
                             Pesanan Saya
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('cart.index')}
+                            active={route().current('cart.*')}
+                        >
+                            Keranjang
                         </ResponsiveNavLink>
                     </div>
 
