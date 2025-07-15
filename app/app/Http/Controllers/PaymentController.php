@@ -24,7 +24,19 @@ class PaymentController extends Controller
      */
     public function index(Order $order)
     {
+        Log::info('Payment page accessed', [
+            'order_id' => $order->id,
+            'order_number' => $order->order_number,
+            'user_id' => Auth::id(),
+            'order_user_id' => $order->user_id
+        ]);
+
         if (! Auth::check() || $order->user_id !== Auth::id()) {
+            Log::error('Unauthorized payment access', [
+                'order_id' => $order->id,
+                'current_user_id' => Auth::id(),
+                'order_user_id' => $order->user_id
+            ]);
             abort(403, 'Unauthorized access to payment');
         }
 
@@ -32,6 +44,19 @@ class PaymentController extends Controller
         if (! in_array($order->status, ['pending', 'pending_payment'])) {
             return redirect()->route('orders.show', $order)
                 ->with('error', 'Order is not eligible for payment');
+        }
+
+        // Check if payment has expired
+        if ($order->isPaymentExpired()) {
+            Log::info('Payment access attempt for expired order', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'created_at' => $order->created_at,
+                'expires_at' => $order->getPaymentExpiryTime()
+            ]);
+            
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Waktu pembayaran untuk pesanan ini telah berakhir. Silakan buat pesanan baru.');
         }
 
         // Check if payment already exists and is paid

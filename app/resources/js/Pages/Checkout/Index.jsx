@@ -14,7 +14,7 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
 
     const { data, setData, post, processing, errors } = useForm({
         address_option: defaultAddress ? 'saved' : 'new',
-        selected_address_id: defaultAddress ? defaultAddress.id : null,
+        selected_address_id: defaultAddress?.id || '',
         shipping_address: {
             name: '',
             phone: '',
@@ -25,18 +25,35 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
         save_address: false,
         address_label: '',
         shipping_method: '',
-        shipping_cost: 0,
+        shipping_cost: '',
     });
 
     // Update form data when address option changes
     useEffect(() => {
         setData('address_option', addressOption);
-        if (addressOption === 'saved' && selectedAddress) {
+        if (addressOption === 'saved' && selectedAddress?.id) {
             setData('selected_address_id', selectedAddress.id);
         } else {
-            setData('selected_address_id', null);
+            setData('selected_address_id', '');
         }
     }, [addressOption, selectedAddress]);
+
+    // Ensure selected address is valid on component mount
+    useEffect(() => {
+        if (defaultAddress && addresses.length > 0) {
+            const validAddress = addresses.find(addr => addr.id === defaultAddress.id);
+            if (validAddress) {
+                setSelectedAddress(validAddress);
+                setData('selected_address_id', validAddress.id);
+            } else {
+                // Default address not found in current user's addresses, reset
+                setSelectedAddress(null);
+                setAddressOption('new');
+                setData('address_option', 'new');
+                setData('selected_address_id', '');
+            }
+        }
+    }, [addresses, defaultAddress]);
 
     async function getShippingOptions() {
         let city = '';
@@ -64,24 +81,99 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
 
     function handleShippingSelect(option) {
         setSelectedShipping(option);
-        setData({
-            ...data,
-            shipping_method: option.name,
-            shipping_cost: option.cost,
-        });
+        setData('shipping_method', option.name);
+        setData('shipping_cost', option.cost);
     }
 
     function handleAddressSelect(address) {
+        if (!address || !address.id) {
+            console.error('Invalid address selected:', address);
+            return;
+        }
+        
+        console.log('Address selected:', address);
         setSelectedAddress(address);
         setData('selected_address_id', address.id);
         // Clear shipping options when address changes
         setShippingOptions([]);
         setSelectedShipping(null);
+        setData('shipping_method', '');
+        setData('shipping_cost', '');
     }
 
     function submit(e) {
         e.preventDefault();
-        post(route('checkout.store'));
+        
+        // Debug: Log form data before submission
+        console.log('Form data being submitted:', data);
+        console.log('Address option:', addressOption);
+        console.log('Selected address:', selectedAddress);
+        console.log('Selected shipping:', selectedShipping);
+        
+        // Client-side validation
+        if (addressOption === 'saved' && (!selectedAddress || !selectedAddress.id)) {
+            alert('Please select a saved address or choose to enter a new address.');
+            return;
+        }
+        
+        if (!data.shipping_method || !data.shipping_cost) {
+            alert('Please select a shipping method.');
+            return;
+        }
+
+        // Additional validation for new address
+        if (addressOption === 'new') {
+            const requiredFields = ['name', 'phone', 'address', 'city', 'postal_code'];
+            const missingFields = [];
+
+            requiredFields.forEach(field => {
+                if (!data.shipping_address[field] || data.shipping_address[field].trim() === '') {
+                    missingFields.push(field);
+                }
+            });
+
+            if (missingFields.length > 0) {
+                alert(`Please fill in the following required fields: ${missingFields.join(', ')}`);
+                return;
+            }
+        }
+
+        // Prepare data based on address option
+        let submitData = {
+            address_option: addressOption,
+            shipping_method: data.shipping_method,
+            shipping_cost: data.shipping_cost,
+        };
+
+        if (addressOption === 'saved') {
+            submitData.selected_address_id = selectedAddress.id;
+        } else {
+            submitData.shipping_address = data.shipping_address;
+            submitData.save_address = data.save_address;
+            if (data.save_address && data.address_label) {
+                submitData.address_label = data.address_label;
+            }
+        }
+
+        console.log('Processed submit data:', submitData);
+        
+        post(route('checkout.store'), {
+            data: submitData,
+            onSuccess: () => {
+                console.log('Checkout successful');
+            },
+            onError: (errors) => {
+                console.log('Checkout errors:', errors);
+                // Scroll to error display
+                const errorElement = document.querySelector('.bg-red-50');
+                if (errorElement) {
+                    errorElement.scrollIntoView({ behavior: 'smooth' });
+                }
+            },
+            onFinish: () => {
+                console.log('Checkout request finished');
+            }
+        });
     }
 
     const formatPrice = (price) => {
@@ -95,6 +187,13 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
     const subtotal = totalAmount;
     const shippingCost = selectedShipping ? selectedShipping.cost : 0;
     const total = subtotal + shippingCost;
+
+    // Debug logging for form state
+    useEffect(() => {
+        console.log('Form data updated:', data);
+        console.log('Processing state:', processing);
+        console.log('Errors:', errors);
+    }, [data, processing, errors]);
 
     return (
         <AuthenticatedLayout>
@@ -334,6 +433,18 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
                                                     </div>
                                                 )}
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {/* General form errors */}
+                                    {Object.keys(errors).length > 0 && (
+                                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                            <h4 className="text-red-800 font-medium mb-2">Please fix the following errors:</h4>
+                                            <ul className="list-disc list-inside text-red-700 text-sm">
+                                                {Object.entries(errors).map(([key, message]) => (
+                                                    <li key={key}>{message}</li>
+                                                ))}
+                                            </ul>
                                         </div>
                                     )}
 

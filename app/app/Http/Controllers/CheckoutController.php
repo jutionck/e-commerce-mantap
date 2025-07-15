@@ -9,6 +9,7 @@ use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
@@ -61,20 +62,51 @@ class CheckoutController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        Log::info('Checkout request received', [
+            'user_id' => Auth::id(),
+            'request_data' => $request->all()
+        ]);
+
+        // Create validation rules based on address option
+        $rules = [
             'address_option' => 'required|string|in:saved,new',
-            'selected_address_id' => 'required_if:address_option,saved|exists:user_addresses,id',
-            'shipping_address' => 'required_if:address_option,new|array',
-            'shipping_address.name' => 'required_if:address_option,new|string|max:255',
-            'shipping_address.phone' => 'required_if:address_option,new|string|max:20',
-            'shipping_address.address' => 'required_if:address_option,new|string',
-            'shipping_address.city' => 'required_if:address_option,new|string|max:100',
-            'shipping_address.postal_code' => 'required_if:address_option,new|string|max:10',
-            'save_address' => 'boolean',
-            'address_label' => 'string|max:255',
             'shipping_method' => 'required|string',
             'shipping_cost' => 'required|numeric|min:0',
-        ]);
+        ];
+
+        if ($request->address_option === 'saved') {
+            $rules['selected_address_id'] = 'required|integer';
+        } else {
+            $rules['shipping_address'] = 'required|array';
+            $rules['shipping_address.name'] = 'required|string|max:255';
+            $rules['shipping_address.phone'] = 'required|string|max:20';
+            $rules['shipping_address.address'] = 'required|string';
+            $rules['shipping_address.city'] = 'required|string|max:100';
+            $rules['shipping_address.postal_code'] = 'required|string|max:10';
+            $rules['save_address'] = 'boolean';
+            $rules['address_label'] = 'nullable|string|max:255';
+        }
+
+        $validation = $request->validate($rules);
+
+        // Additional validation: ensure selected address belongs to current user
+        if ($request->address_option === 'saved' && $request->selected_address_id) {
+            $address = UserAddress::where('id', $request->selected_address_id)
+                ->where('user_id', Auth::id())
+                ->first();
+            
+            if (!$address) {
+                Log::error('Invalid address selection', [
+                    'user_id' => Auth::id(),
+                    'selected_address_id' => $request->selected_address_id,
+                    'available_addresses' => Auth::user()->addresses()->pluck('id')->toArray()
+                ]);
+                
+                return back()->withErrors([
+                    'selected_address_id' => 'The selected address is invalid or does not belong to you.'
+                ])->withInput();
+            }
+        }
 
         $cart = session()->get('cart', []);
 
@@ -167,13 +199,28 @@ class CheckoutController extends Controller
 
             DB::commit();
 
+            // Log successful order creation
+            Log::info('Order created successfully', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'user_id' => Auth::id(),
+                'total_amount' => $order->total_amount,
+                'redirect_url' => route('payments.index', $order)
+            ]);
+
             // Redirect to payment page
             return redirect()->route('payments.index', $order)
                 ->with('success', 'Pesanan berhasil dibuat. Silakan lakukan pembayaran.');
         } catch (\Exception $e) {
             DB::rollback();
 
-            return back()->with('error', $e->getMessage());
+            Log::error('Checkout process failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all(),
+            ]);
+
+            return back()->with('error', 'Order creation failed: ' . $e->getMessage());
         }
     }
 
