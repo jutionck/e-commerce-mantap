@@ -1,10 +1,12 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function OrderShow({ order }) {
+export default function OrderShow({ order, paymentExpiry }) {
     const [isChecking, setIsChecking] = useState(false);
     const [currentOrder, setCurrentOrder] = useState(order);
+    const [timeRemaining, setTimeRemaining] = useState(paymentExpiry?.time_remaining_minutes || 0);
+    const [isExpired, setIsExpired] = useState(paymentExpiry?.is_expired || false);
     const getStatusColor = (status) => {
         const colors = {
             'pending': 'bg-yellow-100 text-yellow-800',
@@ -22,6 +24,38 @@ export default function OrderShow({ order }) {
             style: 'currency',
             currency: 'IDR'
         }).format(price);
+    };
+
+    // Countdown timer for payment expiry
+    useEffect(() => {
+        if (isExpired || currentOrder.status === 'paid' || timeRemaining <= 0) {
+            return;
+        }
+
+        const timer = setInterval(() => {
+            setTimeRemaining(prev => {
+                if (prev <= 1) {
+                    setIsExpired(true);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 60000); // Update every minute
+
+        return () => clearInterval(timer);
+    }, [isExpired, currentOrder.status, timeRemaining]);
+
+    // Format time remaining
+    const formatTimeRemaining = (minutes) => {
+        if (minutes <= 0) return 'Expired';
+        
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        
+        if (hours > 0) {
+            return `${hours} jam ${mins} menit`;
+        }
+        return `${mins} menit`;
     };
 
     const checkPaymentStatus = async () => {
@@ -157,60 +191,170 @@ export default function OrderShow({ order }) {
                                         <div className="p-4 border rounded-lg">
                                             {currentOrder.payment ? (
                                                 <div>
-                                                    <p className="font-medium">
-                                                        Status: 
-                                                        <span className={`ml-2 px-2 py-1 rounded text-sm ${
-                                                            currentOrder.payment.status === 'paid' 
-                                                                ? 'bg-green-100 text-green-800' 
-                                                                : 'bg-yellow-100 text-yellow-800'
-                                                        }`}>
-                                                            {currentOrder.payment.status === 'paid' ? 'Lunas' : 'Menunggu Pembayaran'}
-                                                        </span>
-                                                    </p>
-                                                    <p className="text-sm text-gray-600 mt-1">
-                                                        Metode: {currentOrder.payment.payment_method}
-                                                    </p>
-                                                    {currentOrder.payment.transaction_id && (
-                                                        <p className="text-sm text-gray-600">
-                                                            ID Transaksi: {currentOrder.payment.transaction_id}
-                                                        </p>
-                                                    )}
-                                                    
-                                                    {/* Manual Status Check Button */}
-                                                    {currentOrder.payment.status !== 'paid' && (
-                                                        <button
-                                                            onClick={checkPaymentStatus}
-                                                            disabled={isChecking}
-                                                            className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition flex items-center"
-                                                        >
-                                                            {isChecking ? (
-                                                                <>
-                                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                                    </svg>
-                                                                    Mengecek...
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                                    </svg>
-                                                                    Cek Status Pembayaran
-                                                                </>
+                                                    {currentOrder.payment.status === 'paid' ? (
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                Status: 
+                                                                <span className="ml-2 px-2 py-1 rounded text-sm bg-green-100 text-green-800">
+                                                                    Lunas
+                                                                </span>
+                                                            </p>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                Metode: {currentOrder.payment.payment_method}
+                                                            </p>
+                                                            {currentOrder.payment.transaction_id && (
+                                                                <p className="text-sm text-gray-600">
+                                                                    ID Transaksi: {currentOrder.payment.transaction_id}
+                                                                </p>
                                                             )}
-                                                        </button>
+                                                        </div>
+                                                    ) : isExpired ? (
+                                                        <div>
+                                                            <p className="text-red-600 font-medium mb-2">
+                                                                ⏰ Waktu Pembayaran Telah Berakhir
+                                                            </p>
+                                                            <p className="text-sm text-gray-600 mb-3">
+                                                                Batas waktu pembayaran untuk pesanan ini telah habis. 
+                                                                Silakan buat pesanan baru untuk melanjutkan.
+                                                            </p>
+                                                            <button
+                                                                disabled
+                                                                className="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed"
+                                                            >
+                                                                Pembayaran Expired
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                Status: 
+                                                                <span className="ml-2 px-2 py-1 rounded text-sm bg-yellow-100 text-yellow-800">
+                                                                    Menunggu Pembayaran
+                                                                </span>
+                                                            </p>
+                                                            <p className="text-sm text-gray-600 mt-1">
+                                                                Metode: {currentOrder.payment.payment_method}
+                                                            </p>
+                                                            {currentOrder.payment.transaction_id && (
+                                                                <p className="text-sm text-gray-600">
+                                                                    ID Transaksi: {currentOrder.payment.transaction_id}
+                                                                </p>
+                                                            )}
+                                                            
+                                                            {timeRemaining > 0 && (
+                                                                <div className="mt-2 mb-3">
+                                                                    <div className="flex items-center text-sm text-gray-600">
+                                                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                        Sisa waktu: {formatTimeRemaining(timeRemaining)}
+                                                                    </div>
+                                                                    <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
+                                                                        <div 
+                                                                            className={`h-2 rounded-full transition-all duration-1000 ${
+                                                                                timeRemaining > 60 ? 'bg-green-500' : 
+                                                                                timeRemaining > 30 ? 'bg-yellow-500' : 'bg-red-500'
+                                                                            }`}
+                                                                            style={{
+                                                                                width: `${Math.max(0, (timeRemaining / (paymentExpiry?.time_remaining_minutes || 1440)) * 100)}%`
+                                                                            }}
+                                                                        ></div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            
+                                                            <div className="mt-3 space-y-2">
+                                                                <Link 
+                                                                    href={`/payments/${currentOrder.id}`}
+                                                                    className={`inline-block px-4 py-2 text-white rounded transition ${
+                                                                        timeRemaining <= 30 && timeRemaining > 0 
+                                                                            ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+                                                                            : 'bg-blue-600 hover:bg-blue-700'
+                                                                    }`}
+                                                                >
+                                                                    {timeRemaining <= 30 && timeRemaining > 0 ? '⚡ Bayar Segera' : 'Bayar Sekarang'}
+                                                                </Link>
+                                                                
+                                                                <button
+                                                                    onClick={checkPaymentStatus}
+                                                                    disabled={isChecking}
+                                                                    className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition flex items-center"
+                                                                >
+                                                                    {isChecking ? (
+                                                                        <>
+                                                                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                                            </svg>
+                                                                            Mengecek...
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                                            </svg>
+                                                                            Cek Status Pembayaran
+                                                                        </>
+                                                                    )}
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                     )}
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <p className="text-yellow-600 font-medium">Menunggu Pembayaran</p>
-                                                    <Link 
-                                                        href={`/payments/${currentOrder.id}`}
-                                                        className="mt-2 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-                                                    >
-                                                        Bayar Sekarang
-                                                    </Link>
+                                                    {isExpired ? (
+                                                        <div>
+                                                            <p className="text-red-600 font-medium mb-2">
+                                                                ⏰ Waktu Pembayaran Telah Berakhir
+                                                            </p>
+                                                            <p className="text-sm text-gray-600 mb-3">
+                                                                Batas waktu pembayaran untuk pesanan ini telah habis. 
+                                                                Silakan buat pesanan baru untuk melanjutkan.
+                                                            </p>
+                                                            <button
+                                                                disabled
+                                                                className="px-4 py-2 bg-gray-400 text-white rounded cursor-not-allowed"
+                                                            >
+                                                                Pembayaran Expired
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div>
+                                                            <p className="text-yellow-600 font-medium">Menunggu Pembayaran</p>
+                                                            {timeRemaining > 0 && (
+                                                                <div className="mt-2 mb-3">
+                                                                    <div className="flex items-center text-sm text-gray-600">
+                                                                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                        </svg>
+                                                                        Sisa waktu: {formatTimeRemaining(timeRemaining)}
+                                                                    </div>
+                                                                    <div className="mt-1 w-full bg-gray-200 rounded-full h-2">
+                                                                        <div 
+                                                                            className={`h-2 rounded-full transition-all duration-1000 ${
+                                                                                timeRemaining > 60 ? 'bg-green-500' : 
+                                                                                timeRemaining > 30 ? 'bg-yellow-500' : 'bg-red-500'
+                                                                            }`}
+                                                                            style={{
+                                                                                width: `${Math.max(0, (timeRemaining / (paymentExpiry?.time_remaining_minutes || 1440)) * 100)}%`
+                                                                            }}
+                                                                        ></div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            <Link 
+                                                                href={`/payments/${currentOrder.id}`}
+                                                                className={`mt-2 inline-block px-4 py-2 text-white rounded transition ${
+                                                                    timeRemaining <= 30 && timeRemaining > 0 
+                                                                        ? 'bg-red-600 hover:bg-red-700 animate-pulse' 
+                                                                        : 'bg-blue-600 hover:bg-blue-700'
+                                                                }`}
+                                                            >
+                                                                {timeRemaining <= 30 && timeRemaining > 0 ? '⚡ Bayar Segera' : 'Bayar Sekarang'}
+                                                            </Link>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

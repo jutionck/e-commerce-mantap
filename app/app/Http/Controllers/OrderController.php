@@ -28,8 +28,16 @@ class OrderController extends Controller
 
         $order->load(['orderItems.product', 'payment']);
 
+        // Add payment expiry information
+        $paymentExpiry = [
+            'is_expired' => $order->isPaymentExpired(),
+            'expires_at' => $order->getPaymentExpiryTime(),
+            'time_remaining_minutes' => $order->getPaymentTimeRemaining(),
+        ];
+
         return Inertia::render('Orders/Show', [
             'order' => $order,
+            'paymentExpiry' => $paymentExpiry,
         ]);
     }
 }

@@ -45,4 +45,41 @@ class Order extends Model
     {
         return $this->hasOne(Payment::class);
     }
+
+    /**
+     * Check if payment has expired
+     */
+    public function isPaymentExpired(): bool
+    {
+        if ($this->status === 'paid' || $this->status === 'cancelled') {
+            return false;
+        }
+
+        $timeoutHours = config('midtrans.payment_timeout', 24);
+        $expiresAt = $this->created_at->addHours($timeoutHours);
+        
+        return now()->isAfter($expiresAt);
+    }
+
+    /**
+     * Get payment expiry time
+     */
+    public function getPaymentExpiryTime()
+    {
+        $timeoutHours = config('midtrans.payment_timeout', 24);
+        return $this->created_at->addHours($timeoutHours);
+    }
+
+    /**
+     * Get time remaining for payment
+     */
+    public function getPaymentTimeRemaining()
+    {
+        if ($this->isPaymentExpired()) {
+            return null;
+        }
+
+        $expiryTime = $this->getPaymentExpiryTime();
+        return now()->diffInMinutes($expiryTime);
+    }
 }
