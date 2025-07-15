@@ -49,12 +49,24 @@ class ShippingController extends Controller
             
             if (!$destinationCityData) {
                 Log::warning('Destination city not found', [
-                    'destination' => $destinationCity
+                    'destination' => $destinationCity,
+                    'api_key_status' => config('rajaongkir.api_key') ? 'configured' : 'missing'
                 ]);
+
+                // Check if this is due to API key issue
+                $cities = $this->rajaOngkirService->getCities();
+                if (empty($cities)) {
+                    return response()->json([
+                        'message' => 'Menggunakan estimasi harga pengiriman (API tidak tersedia)',
+                        'info' => 'Silakan hubungi admin untuk konfigurasi API pengiriman',
+                        'options' => $this->rajaOngkirService->getFallbackOptions()
+                    ]);
+                }
 
                 return response()->json([
                     'error' => 'Kota tujuan tidak ditemukan',
-                    'suggestion' => 'Pastikan nama kota sesuai dengan daftar kota di Indonesia',
+                    'suggestion' => 'Coba gunakan nama kota yang lebih umum (contoh: Jakarta, Bandung, Surabaya)',
+                    'example_cities' => ['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Yogyakarta', 'Semarang'],
                     'fallback_options' => $this->rajaOngkirService->getFallbackOptions()
                 ], 404);
             }

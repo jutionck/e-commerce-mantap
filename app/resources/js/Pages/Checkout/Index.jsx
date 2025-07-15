@@ -96,9 +96,23 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
         } catch (error) {
             console.error('Shipping cost error:', error);
             
-            if (error.response?.data?.fallback_options) {
-                setShippingOptions(error.response.data.fallback_options);
-                alert(error.response.data.error || 'Menggunakan estimasi harga pengiriman');
+            if (error.response?.data) {
+                const errorData = error.response.data;
+                
+                if (errorData.fallback_options || errorData.options) {
+                    setShippingOptions(errorData.fallback_options || errorData.options);
+                    
+                    // Show appropriate message
+                    if (errorData.info) {
+                        alert(`${errorData.message || errorData.error}\n\n${errorData.info}`);
+                    } else if (errorData.suggestion) {
+                        alert(`${errorData.error}\n\n${errorData.suggestion}\n\nContoh kota: ${errorData.example_cities?.join(', ')}`);
+                    } else {
+                        alert(errorData.message || errorData.error || 'Menggunakan estimasi harga pengiriman');
+                    }
+                } else {
+                    alert('Gagal mengambil opsi pengiriman. Coba lagi.');
+                }
             } else {
                 alert('Gagal mengambil opsi pengiriman. Coba lagi.');
             }

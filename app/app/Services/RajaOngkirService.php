@@ -95,27 +95,55 @@ class RajaOngkirService
     {
         $cities = $this->getCities();
         
-        // Try exact match first
+        // If no cities available (API failed), return null to trigger fallback
+        if (empty($cities)) {
+            Log::warning('No cities data available for matching', [
+                'search_term' => $cityName
+            ]);
+            return null;
+        }
+        
+        // Clean the search term
+        $cleanCityName = trim(strtolower($cityName));
+        
+        // Try exact match first (case insensitive)
         foreach ($cities as $city) {
             if (strcasecmp($city['city_name'], $cityName) === 0) {
                 return $city;
             }
         }
 
-        // Try partial match
+        // Try partial match in city name
         foreach ($cities as $city) {
             if (stripos($city['city_name'], $cityName) !== false) {
                 return $city;
             }
         }
 
-        // Try with type (Kota/Kabupaten)
+        // Try with type (Kota/Kabupaten) - both directions
         foreach ($cities as $city) {
             $fullName = $city['type'] . ' ' . $city['city_name'];
-            if (stripos($fullName, $cityName) !== false) {
+            if (stripos($fullName, $cityName) !== false || 
+                stripos($cityName, $city['city_name']) !== false) {
                 return $city;
             }
         }
+
+        // Try more flexible matching - remove common prefixes
+        $cleanedSearch = preg_replace('/^(kota|kabupaten|kab\.?)\s+/i', '', $cleanCityName);
+        foreach ($cities as $city) {
+            $cleanedCityName = strtolower($city['city_name']);
+            if (stripos($cleanedCityName, $cleanedSearch) !== false ||
+                stripos($cleanedSearch, $cleanedCityName) !== false) {
+                return $city;
+            }
+        }
+
+        Log::info('City not found in RajaOngkir database', [
+            'search_term' => $cityName,
+            'cleaned_term' => $cleanedSearch,
+            'total_cities_available' => count($cities)
+        ]);
 
         return null;
     }
