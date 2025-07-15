@@ -63,6 +63,7 @@ class ProductController extends Controller
             'image' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'weight' => 'required|integer|min:1',
         ]);
 
         Product::create([
@@ -73,6 +74,7 @@ class ProductController extends Controller
             'image' => $request->image,
             'price' => $request->price,
             'stock' => $request->stock,
+            'weight' => $request->weight,
         ]);
 
         return redirect()->route('admin.products.index')
@@ -116,6 +118,7 @@ class ProductController extends Controller
             'image' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
+            'weight' => 'required|integer|min:1',
         ]);
 
         $product->update([
@@ -126,6 +129,7 @@ class ProductController extends Controller
             'image' => $request->image,
             'price' => $request->price,
             'stock' => $request->stock,
+            'weight' => $request->weight,
         ]);
 
         return redirect()->route('admin.products.index')

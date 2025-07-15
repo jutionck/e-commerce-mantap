@@ -11,6 +11,7 @@ export default function Edit({ product, categories }) {
         image: product.image || '',
         price: product.price || '',
         stock: product.stock || '',
+        weight: product.weight || '',
     });
 
     const handleSubmit = (e) => {
@@ -140,6 +141,30 @@ export default function Edit({ product, categories }) {
                                         {errors.stock && (
                                             <p className="mt-1 text-sm text-red-600">{errors.stock}</p>
                                         )}
+                                    </div>
+
+                                    {/* Weight */}
+                                    <div>
+                                        <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
+                                            Weight (grams) *
+                                        </label>
+                                        <input
+                                            type="number"
+                                            id="weight"
+                                            value={data.weight}
+                                            onChange={(e) => setData('weight', e.target.value)}
+                                            min="1"
+                                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 ${
+                                                errors.weight ? 'border-red-500' : 'border-gray-300'
+                                            }`}
+                                            placeholder="1000"
+                                        />
+                                        {errors.weight && (
+                                            <p className="mt-1 text-sm text-red-600">{errors.weight}</p>
+                                        )}
+                                        <p className="mt-1 text-sm text-gray-500">
+                                            Product weight in grams (used for shipping cost calculation). Default: 1000g (1kg)
+                                        </p>
                                     </div>
                                 </div>
 
