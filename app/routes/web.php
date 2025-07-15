@@ -32,7 +32,10 @@ Route::post('cart', [CartController::class, 'store'])->name('cart.store');
 Route::patch('cart/{product}', [CartController::class, 'update'])->name('cart.update');
 Route::delete('cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
 
+// Shipping routes
 Route::post('shipping-cost', [ShippingController::class, 'getShippingCost'])->name('shipping.cost');
+Route::get('shipping/provinces', [ShippingController::class, 'getProvinces'])->name('shipping.provinces');
+Route::get('shipping/cities', [ShippingController::class, 'getCities'])->name('shipping.cities');
 
 // Payment webhook (no auth required for Midtrans notification)
 Route::post('payments/notification', [PaymentController::class, 'notification'])->name('payments.notification');

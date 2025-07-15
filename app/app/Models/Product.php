@@ -20,11 +20,13 @@ class Product extends Model
         'image',
         'price',
         'stock',
+        'weight',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'stock' => 'integer',
+        'weight' => 'integer',
     ];
 
     public function category(): BelongsTo

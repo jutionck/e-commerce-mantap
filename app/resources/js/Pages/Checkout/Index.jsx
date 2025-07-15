@@ -68,14 +68,40 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
             alert('Mohon isi atau pilih alamat terlebih dahulu');
             return;
         }
+
+        // Calculate total weight from cart items
+        const totalWeight = cartItems.reduce((total, item) => {
+            const productWeight = item.product.weight || 1000; // Default 1kg if not specified
+            return total + (productWeight * item.quantity);
+        }, 0);
         
         try {
             const response = await axios.post('/shipping-cost', {
                 destination: city,
+                weight: totalWeight,
             });
-            setShippingOptions(response.data);
+            
+            // Handle different response formats
+            if (response.data.options) {
+                setShippingOptions(response.data.options);
+            } else if (response.data.fallback_options) {
+                setShippingOptions(response.data.fallback_options);
+                alert('Menggunakan estimasi harga pengiriman karena data kota tidak ditemukan');
+            } else if (Array.isArray(response.data)) {
+                // Legacy format support
+                setShippingOptions(response.data);
+            } else {
+                throw new Error('Invalid response format');
+            }
         } catch (error) {
-            alert('Gagal mengambil opsi pengiriman. Coba lagi.');
+            console.error('Shipping cost error:', error);
+            
+            if (error.response?.data?.fallback_options) {
+                setShippingOptions(error.response.data.fallback_options);
+                alert(error.response.data.error || 'Menggunakan estimasi harga pengiriman');
+            } else {
+                alert('Gagal mengambil opsi pengiriman. Coba lagi.');
+            }
         }
     }
 
@@ -476,19 +502,41 @@ export default function Index({ cartItems, totalAmount, addresses, defaultAddres
                                                         }`}
                                                         onClick={() => handleShippingSelect(option)}
                                                     >
-                                                        <div className="flex justify-between items-center">
-                                                            <div>
-                                                                <h4 className="font-semibold text-gray-900">{option.name}</h4>
-                                                                <p className="text-sm text-gray-600">{formatPrice(option.cost)}</p>
+                                                        <div className="flex justify-between items-start">
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center space-x-2 mb-1">
+                                                                    <h4 className="font-semibold text-gray-900">{option.name}</h4>
+                                                                    {option.courier_name && (
+                                                                        <span className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                                                                            {option.courier_name}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                {option.description && option.description !== option.name && (
+                                                                    <p className="text-sm text-gray-600 mb-1">{option.description}</p>
+                                                                )}
+                                                                <div className="flex items-center space-x-4 text-sm">
+                                                                    <span className="font-semibold text-green-600">
+                                                                        {option.formatted_cost || formatPrice(option.cost)}
+                                                                    </span>
+                                                                    {option.formatted_estimate && (
+                                                                        <span className="text-gray-500 flex items-center">
+                                                                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                            </svg>
+                                                                            {option.formatted_estimate}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                            <div className="flex items-center">
+                                                            <div className="ml-4">
                                                                 <input
                                                                     type="radio"
                                                                     name="shipping"
                                                                     value={option.name}
                                                                     checked={selectedShipping && selectedShipping.name === option.name}
                                                                     onChange={() => handleShippingSelect(option)}
-                                                                    className="text-green-600 focus:ring-green-500"
+                                                                    className="text-green-600 focus:ring-green-500 w-4 h-4"
                                                                 />
                                                             </div>
                                                         </div>
