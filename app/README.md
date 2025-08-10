@@ -13,7 +13,8 @@ A modern, full-featured e-commerce application built with Laravel 12 + React 18 
 - **Wishlist System** - Save favorite products, heart icons, dedicated wishlist page
 - **Modern UI/UX** - Modal login/register, toast notifications, responsive design
 - **Checkout Process** - Shipping address, method selection, order creation
-- **Order Management** - View order history, track order status
+- **Payment System** - Midtrans integration with real-time countdown and expiration handling
+- **Order Management** - View order history, track order status with payment tracking
 - **User Profile** - Update personal information, password management
 
 ### 🔧 Admin Panel (100% Complete ✅)
@@ -31,6 +32,9 @@ A modern, full-featured e-commerce application built with Laravel 12 + React 18 
 - **SQLite** - Database (development), MySQL support
 - **Eloquent ORM** - Database relationships and queries
 - **Laravel Breeze** - Authentication scaffolding
+- **Midtrans Core API** - Payment gateway integration
+- **RajaOngkir API** - Shipping cost calculation
+- **Laravel Queue** - Background job processing
 
 ### Frontend
 - **React 18** - Modern UI library with hooks and context
@@ -38,6 +42,7 @@ A modern, full-featured e-commerce application built with Laravel 12 + React 18 
 - **Tailwind CSS** - Utility-first styling with custom components
 - **Lucide React** - Modern icon library for consistent UI
 - **Vite** - Fast build tool and dev server
+- **Toast Notifications** - Modern alert system with animations
 
 ### Development Tools
 - **PHPUnit** - Backend testing (88+ tests passing)
@@ -62,9 +67,11 @@ A modern, full-featured e-commerce application built with Laravel 12 + React 18 
   - Professional responsive interface
 - **Database Architecture** (100%) - Complete schema with relationships
 
-### 🔄 In Progress
-- **Payment Gateway** (80%) - Midtrans Snap integration (backend complete, frontend integration)
-- **Real Shipping API** (30%) - JNE/JNT integration (currently mock data)
+### ✅ Recently Completed
+- **Payment Gateway** (100%) - Complete Midtrans Core API integration with expiration handling
+- **Shipping Integration** (100%) - RajaOngkir API with real-time cost calculation
+- **Modern Notifications** (100%) - Toast notification system replacing alerts
+- **Payment Expiration** (100%) - Automatic handling with countdown timers and cleanup jobs
 
 ### 🚀 Coming Soon
 - **Social Authentication** - Google and Facebook login integration
@@ -140,6 +147,14 @@ php artisan tinker                # Laravel REPL
 php artisan route:list            # List all routes
 ```
 
+### Payment & Order Management
+```bash
+php artisan queue:listen --tries=1           # Start queue worker for payment processing
+php artisan expired:payments                 # Process expired payments manually
+php artisan test:payment --user=1 --amount=150000  # Create test payment
+php artisan pail --timeout=0                # View real-time logs
+```
+
 ## 👤 Default Admin Account
 
 Access the admin panel with these credentials:
@@ -179,12 +194,16 @@ app/
 │   ├── js/
 │   │   ├── Components/      # Reusable React components
 │   │   │   ├── Auth/        # Authentication modals
-│   │   │   ├── ui/          # UI components
+│   │   │   ├── ui/          # UI components (Toast, CopyButton)
+│   │   │   ├── Payment/     # Payment-related components
 │   │   │   └── ...          # Wishlist, Cart, Categories etc
+│   │   ├── contexts/        # React Context providers (ToastContext)
+│   │   ├── hooks/           # Custom React hooks (useToast)
 │   │   ├── Layouts/         # Layout components
 │   │   └── Pages/           # Inertia.js page components
 │   │       ├── Admin/       # Admin panel pages
 │   │       ├── Auth/        # Authentication pages
+│   │       ├── Payment/     # Payment flow pages
 │   │       ├── Wishlist/    # Wishlist pages
 │   │       └── ...          # Customer pages
 │   └── css/                 # Styling files
@@ -252,6 +271,32 @@ app/
 - Follow Laravel best practices
 
 ## 📝 Changelog
+
+### v1.4.0 - August 10, 2025 - Payment System & Modern UX Complete
+- ✅ **MAJOR:** Complete Payment System Implementation
+  - Midtrans Core API integration with unique transaction handling
+  - Real-time payment countdown with automatic expiry detection
+  - Comprehensive payment expiration handling and user recovery flows
+  - Background job processing for automated expired payment cleanup
+- ✅ **MAJOR:** Modern Toast Notification System
+  - Complete replacement of JavaScript alerts with styled toast notifications
+  - React Context-based global state management for notifications
+  - Animated toast containers with progress bars and auto-dismiss
+  - Multiple toast types (success, error, info, warning) with custom styling
+- ✅ **MAJOR:** Enhanced Copy Functionality
+  - Reusable CopyButton component with visual feedback
+  - Clipboard API with comprehensive fallback for older browsers
+  - Variant-based styling system for different use cases
+  - Integration with toast notifications for user feedback
+- ✅ **MAJOR:** Shipping Integration
+  - Complete RajaOngkir API integration for real shipping costs
+  - Dynamic city selection and cost calculation
+  - Admin weight management system for accurate shipping
+- ✅ **UX Improvements:**
+  - Eliminated all JavaScript alert() calls for modern user experience
+  - Added visual feedback for all user interactions
+  - Enhanced error handling with user-friendly messages
+  - Improved payment flow with clear status indicators
 
 ### v1.3.0 - July 14, 2025 - Wishlist & Modern UI Complete
 - ✅ **MAJOR:** Complete Wishlist System Implementation

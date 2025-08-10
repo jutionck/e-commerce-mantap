@@ -57,8 +57,13 @@ composer dev
 # Start individual services
 php artisan serve              # Laravel server
 npm run dev                   # Vite development
-php artisan queue:listen      # Queue worker
+php artisan queue:listen      # Queue worker untuk background jobs
 php artisan pail             # Real-time logs
+
+# Payment & Order Management
+php artisan test:payment --user=1 --amount=150000  # Create test payment
+php artisan expired:payments                       # Process expired payments
+php artisan schedule:work                          # Run scheduled tasks
 
 # Build production assets
 npm run build
@@ -74,12 +79,15 @@ php artisan test
 ## Arsitektur Aplikasi
 
 ### Tech Stack
-- **Backend**: Laravel 12
-- **Frontend**: React 18 + Inertia.js
+- **Backend**: Laravel 12 + Midtrans Core API + RajaOngkir API
+- **Frontend**: React 18 + Inertia.js + Toast Notifications
 - **Database**: SQLite (dev), MySQL (prod)
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS + Custom Components
 - **Build Tool**: Vite
 - **Authentication**: Laravel Breeze
+- **Background Jobs**: Laravel Queue + Redis (prod)
+- **Payment Processing**: Midtrans Core API dengan expiration handling
+- **Shipping**: RajaOngkir API untuk real-time cost calculation
 
 ### Project Structure
 ```
@@ -96,10 +104,15 @@ app/
 ├── resources/
 │   ├── js/
 │   │   ├── Components/     # React components
-│   │   ├── Layouts/        # Layout components
-│   │   ├── Pages/          # Inertia pages
-│   │   └── app.jsx        # Main entry point
-│   └── css/               # Styles
+│   │   │   ├── Payment/   # Payment-related components
+│   │   │   └── ui/        # UI components (Toast, CopyButton)
+│   │   ├── contexts/      # React Context providers
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── Layouts/       # Layout components
+│   │   ├── Pages/         # Inertia pages
+│   │   │   └── Payment/   # Payment flow pages
+│   │   └── app.jsx       # Main entry point with ToastProvider
+│   └── css/              # Styles
 ├── routes/
 │   ├── web.php            # Web routes
 │   └── auth.php           # Auth routes
@@ -269,9 +282,10 @@ PATCH /profile                  # Update profile
 DELETE /profile                 # Delete account
 
 # Payment Routes
-GET  /payments/{order}          # Show payment page
+GET  /payments/{order}          # Show payment page dengan countdown
 POST /payments/{payment}/cancel # Cancel a payment
 GET  /payments/{order}/check-status # Check payment status (AJAX)
+GET  /payments/{order}/expired  # Expired payment recovery page
 ```
 
 ### Public Payment Routes
@@ -365,6 +379,14 @@ NavLink.jsx             # Navigation link
 PrimaryButton.jsx       # Primary button
 SecondaryButton.jsx     # Secondary button
 TextInput.jsx           # Text input field
+
+// Payment Components
+Payment/PaymentCountdown.jsx     # Real-time countdown timer
+Payment/PaymentInstructions.jsx  # Payment instructions dengan copy buttons
+
+// UI Components
+ui/Toast.jsx            # Modern toast notification system
+ui/CopyButton.jsx       # Copy functionality dengan fallbacks
 ```
 
 ### State Management
@@ -372,6 +394,8 @@ TextInput.jsx           # Text input field
 - **Authentication**: Laravel session
 - **Forms**: Inertia.js useForm hook
 - **Navigation**: Inertia.js router
+- **Notifications**: React Context (ToastContext)
+- **Global State**: React hooks dengan Context providers
 
 ## Testing
 

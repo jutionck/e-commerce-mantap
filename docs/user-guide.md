@@ -253,45 +253,96 @@ Akses melalui wishlist icon di header atau direct URL `/wishlist`
    - Nama penerima
    - Nomor telepon
    - Alamat lengkap
-   - Kota
+   - Pilih kota dari dropdown (RajaOngkir integration)
    - Kode pos
 
 3. **Pilih Metode Pengiriman**:
    - Klik "Cek Ongkos Kirim" setelah isi alamat
-   - Pilih kurir dan metode pengiriman
-   - Lihat estimasi biaya kirim
+   - Pilih kurir (JNE, TIKI, POS) dengan estimasi real-time
+   - Lihat biaya kirim aktual dari RajaOngkir API
+   - Pilih service yang sesuai budget dan timeline
 
 4. **Review Pesanan**:
    - Cek semua item di keranjang
    - Pastikan alamat pengiriman benar
-   - Lihat total pembayaran (subtotal + ongkir)
+   - Lihat total pembayaran (subtotal + ongkir real-time)
 
 5. **Buat Pesanan**:
    - Klik "Buat Pesanan"
-   - Sistem akan memproses pesanan dan mengarahkan Anda ke halaman pembayaran.
+   - Sistem akan memproses pesanan dan mengarahkan ke halaman pembayaran
 
-### Proses Pembayaran
-Setelah membuat pesanan, Anda akan diarahkan ke halaman pembayaran yang aman.
+### 💳 Sistem Pembayaran Modern
+Setelah membuat pesanan, Anda akan diarahkan ke halaman pembayaran dengan fitur lengkap.
 
-1. **Halaman Pembayaran**:
-   - Halaman ini akan menampilkan ringkasan pesanan Anda.
-   - Klik tombol **"Pay Now"** untuk memulai proses pembayaran melalui Midtrans.
+#### 🕐 Payment Countdown Timer
+- **24-Hour Timer**: Countdown real-time untuk batas waktu pembayaran
+- **Visual Indicators**: 
+  - Hijau: Waktu masih banyak (>6 jam)
+  - Kuning: Waktu terbatas (2-6 jam)
+  - Merah: Hampir expired (<2 jam)
+- **Auto Redirect**: Otomatis redirect ke expired page jika waktu habis
 
-2. **Pilih Metode Pembayaran**:
-   - Sebuah popup aman dari Midtrans akan muncul.
-   - Anda dapat memilih berbagai metode pembayaran, seperti:
-     - Kartu Kredit/Debit
-     - Transfer Bank (Virtual Account)
-     - E-Wallet (GoPay, ShopeePay, dll.)
-     - QRIS
+#### 💰 Metode Pembayaran Lengkap
+**E-Wallets (Prioritas Utama):**
+- 🟢 **GoPay** - Bayar dengan saldo GoPay atau QRIS
+- 🔵 **DANA** - Transfer via DANA app
+- 🟠 **ShopeePay** - Bayar dengan ShopeePay
+- 🔴 **LinkAja** - Transfer dengan LinkAja
+- 🟡 **OVO** - Bayar dengan OVO
 
-3. **Selesaikan Pembayaran**:
-   - Ikuti instruksi yang diberikan untuk metode pembayaran yang Anda pilih.
-   - Setelah pembayaran berhasil, Anda akan diarahkan kembali ke halaman sukses di situs kami.
+**Bank Transfer (Virtual Account):**
+- 🏦 **BCA Virtual Account** - Transfer ke VA BCA
+- 🏦 **BNI Virtual Account** - Transfer ke VA BNI  
+- 🏦 **BRI Virtual Account** - Transfer ke VA BRI
+- 🏦 **Mandiri Bill Payment** - Bayar via Mandiri
 
-4. **Konfirmasi Otomatis**:
-   - Status pesanan dan pembayaran Anda akan diperbarui secara otomatis.
-   - Anda dapat melihat status terbaru di halaman "Pesanan Saya".
+**Lainnya:**
+- 📱 **QRIS** - Universal QR Code payment
+- 💳 **Credit Card** - Visa, MasterCard, JCB
+- 🏪 **Convenience Store** - Indomaret, Alfamart
+
+#### 📋 Payment Instructions
+**Fitur Copy yang Modern:**
+- **Copy Buttons**: Copy nomor VA, kode pembayaran, dll dengan satu klik
+- **Toast Notifications**: Feedback modern "berhasil disalin! 📋"
+- **Browser Compatibility**: Fallback untuk browser lama
+- **Visual Feedback**: Icon berubah saat berhasil copy
+
+**Instruksi Detail:**
+- **QR Code**: Tampilan QR code untuk scan pembayaran
+- **Virtual Account**: Nomor VA dengan copy button
+- **Payment Code**: Kode pembayaran untuk convenience store
+- **Step-by-step**: Panduan langkah pembayaran
+- **Important Notes**: Catatan penting dan tips
+
+#### ⏰ Payment Expiration Handling
+**Jika Pembayaran Expired:**
+- **Automatic Detection**: Sistem deteksi otomatis payment expired
+- **Expired Page**: Halaman khusus dengan penjelasan clear
+- **Recovery Options**: 
+  - Create new payment untuk order yang sama
+  - Back to checkout untuk ubah alamat/metode
+  - Contact support untuk bantuan
+- **Clean Status**: Order dan payment status otomatis update ke "expired"
+
+**Background Processing:**
+- **Automated Cleanup**: Background job membersihkan expired payments
+- **Scheduled Tasks**: Berjalan otomatis setiap periode tertentu
+- **System Maintenance**: Menjaga database tetap clean
+
+#### 🔄 Payment Status Tracking
+- **Real-time Updates**: Status payment update otomatis
+- **Manual Check**: Button "Check Payment Status" untuk sync manual
+- **Status Indicators**: Visual badge untuk setiap status payment
+- **Order Integration**: Status order update sesuai payment status
+
+### 🎉 Payment Success Flow
+**Setelah Pembayaran Berhasil:**
+1. **Success Page**: Halaman konfirmasi dengan detail order
+2. **Order Updates**: Status order otomatis update ke "confirmed"
+3. **Payment Confirmation**: Status payment update ke "settlement"
+4. **Email Notification**: (Coming soon) Email konfirmasi pembayaran
+5. **Order Tracking**: Bisa track order di "Pesanan Saya"
 
 ## Mengelola Pesanan
 
