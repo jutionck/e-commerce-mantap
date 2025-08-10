@@ -70,27 +70,12 @@ class PaymentController extends Controller
         }
 
         try {
-            // Create or get existing payment token
-            $existingPayment = Payment::where('order_id', $order->id)
-                ->where('status', 'pending')
-                ->first();
-
-            if ($existingPayment && $existingPayment->snap_token) {
-                $paymentData = [
-                    'snap_token' => $existingPayment->snap_token,
-                    'payment_id' => $existingPayment->id,
-                    'client_key' => config('midtrans.client_key'),
-                    'environment' => config('midtrans.environment'),
-                ];
-            } else {
-                // Create new Snap token
-                $paymentData = $this->midtransService->createSnapToken($order);
-            }
+            // Get available payment methods for Core API
+            $availablePaymentMethods = $this->midtransService->getAvailablePaymentMethods();
 
             return Inertia::render('Payment/Index', [
                 'order' => $order->load('orderItems.product'),
-                'paymentData' => $paymentData,
-                'snapUrl' => config('midtrans.urls.'.config('midtrans.environment').'.snap'),
+                'availablePaymentMethods' => $availablePaymentMethods,
             ]);
         } catch (\Exception $e) {
             Log::error('Payment page error', [
@@ -100,6 +85,44 @@ class PaymentController extends Controller
 
             return redirect()->route('orders.show', $order)
                 ->with('error', 'Failed to initialize payment: '.$e->getMessage());
+        }
+    }
+
+
+    /**
+     * Create Core API payment
+     */
+    public function createCoreApi(Request $request, Order $order)
+    {
+        $request->validate([
+            'payment_type' => 'required|string|in:bank_transfer,qris',
+            'payment_options' => 'sometimes|array',
+        ]);
+
+        if (! Auth::check() || $order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to payment');
+        }
+
+        if ($order->isPaymentExpired()) {
+            return response()->json(['error' => 'Payment has expired'], 400);
+        }
+
+        try {
+            $paymentData = $this->midtransService->createCoreApiPayment(
+                $order, 
+                $request->payment_type,
+                $request->payment_options ?? []
+            );
+
+            return response()->json(['success' => true, 'data' => $paymentData]);
+        } catch (Exception $e) {
+            Log::error('Failed to create Core API payment', [
+                'order_id' => $order->id,
+                'payment_type' => $request->payment_type,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json(['error' => 'Failed to create payment: ' . $e->getMessage()], 500);
         }
     }
 
@@ -232,6 +255,32 @@ class PaymentController extends Controller
     }
 
     /**
+     * Handle expired payment page
+     */
+    public function expired(Order $order)
+    {
+        // Ensure user owns this order
+        if ($order->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized access to order');
+        }
+
+        // Mark as expired if not already
+        if (!in_array($order->status, ['expired', 'cancelled'])) {
+            $order->update(['status' => 'expired']);
+            
+            $payment = $order->payment;
+            if ($payment) {
+                $payment->update(['status' => 'expired']);
+            }
+        }
+
+        return Inertia::render('Payment/Expired', [
+            'order' => $order->load('orderItems.product'),
+            'expiredAt' => $order->getPaymentExpiryTime(),
+        ]);
+    }
+
+    /**
      * Cancel payment
      */
     public function cancel(Payment $payment)
@@ -278,6 +327,25 @@ class PaymentController extends Controller
         // Ensure user owns this order
         if ($order->user_id !== Auth::id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if payment has expired before checking Midtrans
+        if ($order->isPaymentExpired()) {
+            // Mark order as expired if not already
+            if (!in_array($order->status, ['cancelled', 'expired'])) {
+                $order->update(['status' => 'expired']);
+                
+                $payment = $order->payment;
+                if ($payment) {
+                    $payment->update(['status' => 'expired']);
+                }
+            }
+
+            return response()->json([
+                'status' => 'expired',
+                'message' => 'Payment has expired',
+                'redirect' => route('payments.expired', ['order' => $order->id])
+            ], 200);
         }
 
         try {

@@ -27,10 +27,12 @@ return [
         'sandbox' => [
             'snap' => 'https://app.sandbox.midtrans.com/snap/snap.js',
             'api' => 'https://api.sandbox.midtrans.com/v2',
+            'core' => 'https://api.sandbox.midtrans.com/v2',
         ],
         'production' => [
             'snap' => 'https://app.midtrans.com/snap/snap.js',
             'api' => 'https://api.midtrans.com/v2',
+            'core' => 'https://api.midtrans.com/v2',
         ],
     ],
 

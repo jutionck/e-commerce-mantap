@@ -37,6 +37,12 @@
         background-image: radial-gradient(circle, #e5e7eb 1px, transparent 1px);
         background-size: 20px 20px;
     }
+
+    /* Toast animations */
+    .animate-progress {
+        width: 100%;
+        transform-origin: left;
+    }
 }
 
 @keyframes blob {
@@ -51,6 +57,15 @@
     }
     100% {
         transform: translate(0px, 0px) scale(1);
+    }
+}
+
+@keyframes shrink {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
     }
 }
 

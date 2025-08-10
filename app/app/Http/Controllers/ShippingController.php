@@ -58,8 +58,10 @@ class ShippingController extends Controller
                 if (empty($cities)) {
                     return response()->json([
                         'message' => 'Menggunakan estimasi harga pengiriman (API tidak tersedia)',
-                        'info' => 'Silakan hubungi admin untuk konfigurasi API pengiriman',
-                        'options' => $this->rajaOngkirService->getFallbackOptions()
+                        'info' => 'API RajaOngkir sedang dalam masa transisi. Harga pengiriman adalah estimasi dan akan dikonfirmasi saat proses order.',
+                        'warning' => 'Untuk harga akurat, silakan hubungi customer service',
+                        'weight' => $weight,
+                        'options' => $this->rajaOngkirService->getFallbackOptions($weight)
                     ]);
                 }
 
@@ -67,7 +69,7 @@ class ShippingController extends Controller
                     'error' => 'Kota tujuan tidak ditemukan',
                     'suggestion' => 'Coba gunakan nama kota yang lebih umum (contoh: Jakarta, Bandung, Surabaya)',
                     'example_cities' => ['Jakarta', 'Bandung', 'Surabaya', 'Medan', 'Yogyakarta', 'Semarang'],
-                    'fallback_options' => $this->rajaOngkirService->getFallbackOptions()
+                    'fallback_options' => $this->rajaOngkirService->getFallbackOptions($weight)
                 ], 404);
             }
 
@@ -95,7 +97,8 @@ class ShippingController extends Controller
 
                 return response()->json([
                     'message' => 'Menggunakan estimasi harga pengiriman',
-                    'options' => $this->rajaOngkirService->getFallbackOptions()
+                    'weight' => $weight,
+                    'options' => $this->rajaOngkirService->getFallbackOptions($weight)
                 ]);
             }
 
@@ -116,7 +119,8 @@ class ShippingController extends Controller
             return response()->json([
                 'error' => 'Gagal menghitung ongkos kirim',
                 'message' => 'Menggunakan estimasi harga pengiriman',
-                'options' => $this->rajaOngkirService->getFallbackOptions()
+                'weight' => $weight,
+                'options' => $this->rajaOngkirService->getFallbackOptions($weight)
             ], 500);
         }
     }

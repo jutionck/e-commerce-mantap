@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
+use Midtrans\CoreApi;
 
 class MidtransService
 {
@@ -329,6 +330,320 @@ class MidtransService
             'finish_url' => route('payments.success'),
             'unfinish_url' => route('payments.pending'),
             'error_url' => route('payments.failed'),
+        ];
+    }
+
+    /**
+     * Create Core API payment transaction
+     */
+    public function createCoreApiPayment(Order $order, string $paymentType, array $paymentOptions = []): array
+    {
+        try {
+            // Cancel any existing pending payments for this order
+            Payment::where('order_id', $order->id)
+                ->whereIn('status', ['pending', 'processing'])
+                ->update(['status' => 'cancelled']);
+            
+            // Create unique order ID for each payment attempt
+            $uniqueOrderId = $order->order_number . '-' . $paymentType . '-' . time();
+            
+            // Prepare transaction details
+            $transactionDetails = [
+                'order_id' => $uniqueOrderId,
+                'gross_amount' => (int) $order->total_amount,
+            ];
+
+            // Prepare item details
+            $itemDetails = [];
+            foreach ($order->orderItems as $item) {
+                $itemDetails[] = [
+                    'id' => $item->product_id,
+                    'price' => (int) $item->price,
+                    'quantity' => $item->quantity,
+                    'name' => $item->product->name,
+                ];
+            }
+
+            // Add shipping cost as item
+            if ($order->shipping_cost > 0) {
+                $itemDetails[] = [
+                    'id' => 'SHIPPING',
+                    'price' => (int) $order->shipping_cost,
+                    'quantity' => 1,
+                    'name' => 'Shipping Cost - '.$order->shipping_method,
+                ];
+            }
+
+            // Parse shipping address safely
+            $shippingAddress = is_array($order->shipping_address) 
+                ? $order->shipping_address 
+                : json_decode($order->shipping_address, true) ?? [];
+                
+            // Prepare customer details with required fields
+            $customerName = $shippingAddress['name'] ?? $order->user->name ?? 'Customer';
+            $customerPhone = $shippingAddress['phone'] ?? '08123456789'; // Default phone
+            $customerAddress = $shippingAddress['address'] ?? 'Default Address';
+            $customerCity = $shippingAddress['city'] ?? 'Jakarta';
+            $customerPostalCode = $shippingAddress['postal_code'] ?? '12345';
+            
+            $customerDetails = [
+                'first_name' => $customerName,
+                'last_name' => '',
+                'email' => $order->user->email,
+                'phone' => $customerPhone,
+                'billing_address' => [
+                    'first_name' => $customerName,
+                    'last_name' => '',
+                    'address' => $customerAddress,
+                    'city' => $customerCity,
+                    'postal_code' => $customerPostalCode,
+                    'country_code' => 'IDN',
+                ],
+                'shipping_address' => [
+                    'first_name' => $customerName,
+                    'last_name' => '',
+                    'address' => $customerAddress,
+                    'city' => $customerCity,
+                    'postal_code' => $customerPostalCode,
+                    'country_code' => 'IDN',
+                ],
+            ];
+
+            // Build transaction parameters based on payment type
+            $transactionParams = [
+                'payment_type' => $paymentType,
+                'transaction_details' => $transactionDetails,
+                'item_details' => $itemDetails,
+                'customer_details' => $customerDetails,
+            ];
+
+            // Add payment-specific parameters
+            $transactionParams = $this->addPaymentSpecificParams($transactionParams, $paymentType, $paymentOptions);
+
+            Log::info('Creating Core API payment', [
+                'payment_type' => $paymentType,
+                'order_id' => $order->order_number,
+                'unique_order_id' => $uniqueOrderId,
+                'amount' => $order->total_amount,
+                'payment_options' => $paymentOptions,
+                'transaction_params' => array_intersect_key($transactionParams, array_flip(['payment_type', 'transaction_details']))
+            ]);
+
+            // Create payment via Core API
+            $response = CoreApi::charge($transactionParams);
+
+            // Create payment record
+            $payment = Payment::create([
+                'order_id' => $order->id,
+                'transaction_id' => $response->transaction_id ?? $uniqueOrderId,
+                'payment_method' => 'midtrans_core_api',
+                'payment_type' => $paymentType,
+                'amount' => $order->total_amount,
+                'status' => $response->transaction_status ?? 'pending',
+                'transaction_type' => 'core_api',
+                'gross_amount' => $order->total_amount,
+                'va_number' => $response->va_numbers[0]->va_number ?? null,
+                'bank' => $response->va_numbers[0]->bank ?? $paymentOptions['bank'] ?? null,
+                'response_data' => json_encode($response),
+            ]);
+
+            Log::info('Core API payment created successfully', [
+                'order_id' => $order->id,
+                'order_number' => $order->order_number,
+                'payment_id' => $payment->id,
+                'payment_type' => $paymentType,
+                'transaction_id' => $response->transaction_id,
+                'status' => $response->transaction_status,
+            ]);
+
+            return [
+                'payment_id' => $payment->id,
+                'transaction_id' => $response->transaction_id,
+                'status' => $response->transaction_status,
+                'payment_type' => $paymentType,
+                'response' => $response,
+                'payment_instructions' => $this->formatPaymentInstructions($response, $paymentType),
+            ];
+
+        } catch (Exception $e) {
+            Log::error('Failed to create Core API payment', [
+                'order_id' => $order->id ?? null,
+                'payment_type' => $paymentType,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw new Exception('Failed to create Core API payment: '.$e->getMessage());
+        }
+    }
+
+    /**
+     * Add payment-specific parameters to transaction
+     */
+    private function addPaymentSpecificParams(array $transactionParams, string $paymentType, array $paymentOptions): array
+    {
+        switch ($paymentType) {
+            case 'bank_transfer':
+                $transactionParams['bank_transfer'] = [
+                    'bank' => $paymentOptions['bank'] ?? 'bca',
+                ];
+                break;
+
+            case 'credit_card':
+                $transactionParams['credit_card'] = [
+                    'secure' => true,
+                    'channel' => 'migs',
+                    'bank' => $paymentOptions['bank'] ?? 'bca',
+                ];
+                if (isset($paymentOptions['installment'])) {
+                    $transactionParams['credit_card']['installment'] = $paymentOptions['installment'];
+                }
+                break;
+
+            case 'gopay':
+                $transactionParams['gopay'] = [
+                    'enable_callback' => true,
+                    'callback_url' => route('payments.success'),
+                ];
+                break;
+
+            case 'shopeepay':
+                $transactionParams['shopeepay'] = [
+                    'callback_url' => route('payments.success'),
+                ];
+                break;
+
+            case 'qris':
+                $transactionParams['qris'] = [
+                    'acquirer' => 'gopay',
+                ];
+                break;
+
+            case 'cstore':
+                $transactionParams['cstore'] = [
+                    'store' => $paymentOptions['store'] ?? 'alfamart',
+                    'message' => 'Payment for Order ' . $transactionParams['transaction_details']['order_id'],
+                ];
+                break;
+        }
+
+        return $transactionParams;
+    }
+
+    /**
+     * Format payment instructions for frontend display
+     */
+    private function formatPaymentInstructions($response, string $paymentType): array
+    {
+        $instructions = [
+            'payment_type' => $paymentType,
+            'status' => $response->transaction_status ?? 'pending',
+        ];
+
+        switch ($paymentType) {
+            case 'bank_transfer':
+                if (isset($response->va_numbers) && !empty($response->va_numbers)) {
+                    $instructions['va_number'] = $response->va_numbers[0]->va_number;
+                    $instructions['bank'] = strtoupper($response->va_numbers[0]->bank);
+                    $instructions['title'] = 'Transfer ke Virtual Account';
+                    $instructions['steps'] = [
+                        "Buka aplikasi mobile banking atau ATM {$instructions['bank']}",
+                        "Pilih menu Transfer > Virtual Account",
+                        "Masukkan nomor Virtual Account: {$instructions['va_number']}",
+                        "Masukkan nominal: Rp " . number_format($response->gross_amount, 0, ',', '.'),
+                        "Ikuti instruksi untuk menyelesaikan pembayaran",
+                        "Simpan bukti transfer untuk referensi",
+                    ];
+                }
+                break;
+
+            case 'gopay':
+                $instructions['title'] = 'Bayar dengan GoPay';
+                if (isset($response->actions)) {
+                    foreach ($response->actions as $action) {
+                        if ($action->name === 'generate-qr-code') {
+                            $instructions['qr_code_url'] = $action->url;
+                        } elseif ($action->name === 'deeplink-redirect') {
+                            $instructions['deeplink'] = $action->url;
+                        }
+                    }
+                }
+                $instructions['steps'] = [
+                    'Buka aplikasi Gojek atau GoPay',
+                    'Scan QR code atau tap link untuk membayar',
+                    'Konfirmasi pembayaran di aplikasi',
+                    'Pembayaran akan diproses secara real-time',
+                ];
+                break;
+
+            case 'qris':
+                $instructions['title'] = 'Bayar dengan QRIS';
+                if (isset($response->actions)) {
+                    foreach ($response->actions as $action) {
+                        if ($action->name === 'generate-qr-code') {
+                            $instructions['qr_code_url'] = $action->url;
+                        }
+                    }
+                }
+                $instructions['steps'] = [
+                    'Buka aplikasi pembayaran yang mendukung QRIS',
+                    'Scan QR code QRIS',
+                    'Konfirmasi nominal pembayaran',
+                    'Selesaikan transaksi di aplikasi',
+                ];
+                break;
+
+            case 'cstore':
+                $instructions['title'] = 'Bayar di Convenience Store';
+                if (isset($response->payment_code)) {
+                    $instructions['payment_code'] = $response->payment_code;
+                    $instructions['store'] = isset($response->store) ? ucfirst($response->store) : 'Alfamart/Indomaret';
+                    $instructions['steps'] = [
+                        "Kunjungi {$instructions['store']} terdekat",
+                        "Berikan kode pembayaran: {$instructions['payment_code']}",
+                        "Bayar sesuai nominal yang tertera",
+                        "Simpan bukti pembayaran",
+                    ];
+                }
+                break;
+
+            default:
+                $instructions['title'] = 'Instruksi Pembayaran';
+                $instructions['steps'] = [
+                    'Ikuti instruksi pembayaran yang muncul',
+                    'Selesaikan pembayaran sesuai metode yang dipilih',
+                ];
+                break;
+        }
+
+        return $instructions;
+    }
+
+    /**
+     * Get available Core API payment methods
+     */
+    public function getAvailablePaymentMethods(): array
+    {
+        return [
+            'bank_transfer' => [
+                'name' => 'Virtual Account',
+                'icon' => 'bank',
+                'description' => 'Transfer melalui ATM, Mobile Banking, atau Internet Banking',
+                'features' => ['instant', 'secure'],
+                'banks' => [
+                    'bca' => ['name' => 'BCA Virtual Account', 'icon' => 'bca'],
+                    'bni' => ['name' => 'BNI Virtual Account', 'icon' => 'bni'],
+                    'bri' => ['name' => 'BRI Virtual Account', 'icon' => 'bri'],
+                    'mandiri' => ['name' => 'Mandiri Virtual Account', 'icon' => 'mandiri'],
+                    'permata' => ['name' => 'Permata Virtual Account', 'icon' => 'permata'],
+                ]
+            ],
+            'qris' => [
+                'name' => 'QRIS',
+                'icon' => 'qris',
+                'description' => 'Scan QR Code dengan aplikasi mobile banking atau e-wallet',
+                'features' => ['instant', 'qr_code', 'universal']
+            ],
         ];
     }
 }

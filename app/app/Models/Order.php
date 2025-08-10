@@ -51,8 +51,8 @@ class Order extends Model
      */
     public function isPaymentExpired(): bool
     {
-        if ($this->status === 'paid' || $this->status === 'cancelled') {
-            return false;
+        if (in_array($this->status, ['paid', 'cancelled', 'expired'])) {
+            return $this->status === 'expired';
         }
 
         $timeoutHours = config('midtrans.payment_timeout', 24);

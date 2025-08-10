@@ -44,6 +44,7 @@ Route::post('payments/notification', [PaymentController::class, 'notification'])
 Route::get('payments/success', [PaymentController::class, 'success'])->name('payments.success');
 Route::get('payments/pending', [PaymentController::class, 'pending'])->name('payments.pending');
 Route::get('payments/failed', [PaymentController::class, 'failed'])->name('payments.failed');
+Route::get('payments/{order}/expired', [PaymentController::class, 'expired'])->middleware('auth')->name('payments.expired');
 
 Route::middleware('auth')->group(function () {
     Route::get('checkout', [CheckoutController::class, 'index'])->name('checkout.index');
@@ -51,6 +52,7 @@ Route::middleware('auth')->group(function () {
 
     // Payment routes
     Route::get('payments/{order}', [PaymentController::class, 'index'])->name('payments.index');
+    Route::post('payments/{order}/core-api', [PaymentController::class, 'createCoreApi'])->name('payments.create-core-api');
     Route::post('payments/{payment}/cancel', [PaymentController::class, 'cancel'])->name('payments.cancel');
     Route::get('payments/{order}/check-status', [PaymentController::class, 'checkStatus'])->name('payments.check-status');
 

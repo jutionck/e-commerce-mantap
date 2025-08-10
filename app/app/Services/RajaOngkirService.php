@@ -253,44 +253,76 @@ class RajaOngkirService
     /**
      * Get fallback shipping options (when API fails)
      */
-    public function getFallbackOptions()
+    public function getFallbackOptions($weight = 1000)
     {
+        // Calculate dynamic pricing based on weight
+        $baseMultiplier = max(1, ceil($weight / 1000)); // Minimum 1kg
+        
         return [
             [
                 'courier_code' => 'jne',
                 'courier_name' => 'JNE',
                 'service' => 'REG',
-                'service_description' => 'Layanan Reguler',
+                'service_description' => 'Layanan Reguler - Estimasi biaya',
                 'name' => 'JNE REG',
-                'description' => 'Layanan Reguler',
-                'cost' => 10000,
+                'description' => 'Layanan Reguler (Estimasi)',
+                'cost' => 9000 * $baseMultiplier,
                 'estimated_days' => '2-3',
-                'formatted_cost' => 'Rp 10.000',
+                'formatted_cost' => 'Rp ' . number_format(9000 * $baseMultiplier, 0, ',', '.'),
                 'formatted_estimate' => '2-3 hari',
+                'is_fallback' => true,
             ],
             [
                 'courier_code' => 'jne',
                 'courier_name' => 'JNE',
                 'service' => 'YES',
-                'service_description' => 'Yakin Esok Sampai',
+                'service_description' => 'Yakin Esok Sampai - Estimasi biaya',
                 'name' => 'JNE YES',
-                'description' => 'Yakin Esok Sampai',
-                'cost' => 20000,
+                'description' => 'Yakin Esok Sampai (Estimasi)',
+                'cost' => 18000 * $baseMultiplier,
                 'estimated_days' => '1',
-                'formatted_cost' => 'Rp 20.000',
+                'formatted_cost' => 'Rp ' . number_format(18000 * $baseMultiplier, 0, ',', '.'),
                 'formatted_estimate' => '1 hari',
+                'is_fallback' => true,
             ],
             [
                 'courier_code' => 'tiki',
                 'courier_name' => 'TIKI',
                 'service' => 'REG',
-                'service_description' => 'Regular Service',
+                'service_description' => 'Regular Service - Estimasi biaya',
                 'name' => 'TIKI REG',
-                'description' => 'Regular Service',
-                'cost' => 12000,
-                'estimated_days' => '2-3',
-                'formatted_cost' => 'Rp 12.000',
-                'formatted_estimate' => '2-3 hari',
+                'description' => 'Regular Service (Estimasi)',
+                'cost' => 11000 * $baseMultiplier,
+                'estimated_days' => '2-4',
+                'formatted_cost' => 'Rp ' . number_format(11000 * $baseMultiplier, 0, ',', '.'),
+                'formatted_estimate' => '2-4 hari',
+                'is_fallback' => true,
+            ],
+            [
+                'courier_code' => 'pos',
+                'courier_name' => 'POS Indonesia',
+                'service' => 'REG',
+                'service_description' => 'Pos Reguler - Estimasi biaya',
+                'name' => 'POS REG',
+                'description' => 'Pos Reguler (Estimasi)',
+                'cost' => 8000 * $baseMultiplier,
+                'estimated_days' => '3-5',
+                'formatted_cost' => 'Rp ' . number_format(8000 * $baseMultiplier, 0, ',', '.'),
+                'formatted_estimate' => '3-5 hari',
+                'is_fallback' => true,
+            ],
+            [
+                'courier_code' => 'sicepat',
+                'courier_name' => 'SiCepat',
+                'service' => 'REG',
+                'service_description' => 'SiCepat Reguler - Estimasi biaya',
+                'name' => 'SiCepat REG',
+                'description' => 'SiCepat Reguler (Estimasi)',
+                'cost' => 10000 * $baseMultiplier,
+                'estimated_days' => '1-2',
+                'formatted_cost' => 'Rp ' . number_format(10000 * $baseMultiplier, 0, ',', '.'),
+                'formatted_estimate' => '1-2 hari',
+                'is_fallback' => true,
             ],
         ];
     }
