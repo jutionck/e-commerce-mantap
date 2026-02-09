@@ -1,46 +1,18 @@
-import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, X } from 'lucide-react';
-import { useForm } from '@inertiajs/react';
+import React from 'react';
+import { X } from 'lucide-react';
 import { Button } from '@/Components/ui/Button';
-import { Input } from '@/Components/ui/Input';
-import { Label } from '@/Components/ui/Label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/Dialog';
 import { Separator } from '@/Components/ui/Separator';
+import { LoginForm } from './LoginForm';
 
 export function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
-    const [showPassword, setShowPassword] = useState(false);
-    
-    const { data, setData, post, processing, errors, reset } = useForm({
-        email: '',
-        password: '',
-        remember: false,
-    });
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        
-        post(route('login'), {
-            onSuccess: () => {
-                reset();
-                onClose();
-                // Page will reload automatically after successful login
-            },
-            onError: () => {
-                // Errors will be displayed via the errors object
-            },
-            preserveScroll: true,
-        });
-    };
-
-    const handleInputChange = (field, value) => {
-        setData(field, value);
+    const handleSuccess = () => {
+        onClose();
+        // Page will reload automatically after successful login
     };
 
     const handleClose = () => {
-        if (!processing) {
-            reset();
-            onClose();
-        }
+        onClose();
     };
 
     return (
@@ -52,7 +24,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
                     size="sm"
                     onClick={handleClose}
                     className="absolute right-4 top-4 h-8 w-8 p-0 hover:bg-gray-100 rounded-full z-10"
-                    disabled={processing}
                 >
                     <X className="h-4 w-4" />
                 </Button>
@@ -62,101 +33,12 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
                     <p className="text-gray-600 text-center">Sign in to your account to continue shopping</p>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {/* Email Field */}
-                    <div className="space-y-2">
-                        <Label htmlFor="email">Email Address</Label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="Enter your email"
-                                value={data.email}
-                                onChange={(e) => handleInputChange('email', e.target.value)}
-                                className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
-                                disabled={processing}
-                                autoComplete="username"
-                            />
-                        </div>
-                        {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-                    </div>
-
-                    {/* Password Field */}
-                    <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                                id="password"
-                                type={showPassword ? 'text' : 'password'}
-                                placeholder="Enter your password"
-                                value={data.password}
-                                onChange={(e) => handleInputChange('password', e.target.value)}
-                                className={`pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
-                                disabled={processing}
-                                autoComplete="current-password"
-                            />
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
-                                disabled={processing}
-                            >
-                                {showPassword ? (
-                                    <EyeOff className="h-4 w-4 text-gray-400" />
-                                ) : (
-                                    <Eye className="h-4 w-4 text-gray-400" />
-                                )}
-                            </Button>
-                        </div>
-                        {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
-                    </div>
-
-                    {/* Remember Me and Forgot Password */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <input
-                                id="remember"
-                                name="remember"
-                                type="checkbox"
-                                checked={data.remember}
-                                onChange={(e) => handleInputChange('remember', e.target.checked)}
-                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                disabled={processing}
-                            />
-                            <Label htmlFor="remember" className="ml-2 text-sm text-gray-600">
-                                Remember me
-                            </Label>
-                        </div>
-                        <Button 
-                            variant="link" 
-                            className="text-sm text-blue-600 hover:text-blue-700 p-0 h-auto"
-                            onClick={() => window.location.href = route('password.request')}
-                            type="button"
-                        >
-                            Forgot your password?
-                        </Button>
-                    </div>
-
-                    {/* Submit Button */}
-                    <Button
-                        type="submit"
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                        disabled={processing}
-                    >
-                        {processing ? (
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                Signing In...
-                            </div>
-                        ) : (
-                            'Sign In'
-                        )}
-                    </Button>
-                </form>
+                <LoginForm 
+                    onSuccess={handleSuccess}
+                    submitButtonText="Sign In"
+                    showForgotPassword={true}
+                    showRememberMe={true}
+                />
 
                 {/* Divider */}
                 <div className="relative my-6">
@@ -208,7 +90,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToRegister }) {
                             variant="link"
                             onClick={onSwitchToRegister}
                             className="text-blue-600 hover:text-blue-700 p-0 h-auto font-medium"
-                            disabled={processing}
                             type="button"
                         >
                             Create one now
